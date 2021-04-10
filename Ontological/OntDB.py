@@ -2,7 +2,7 @@ import copy
 from Ontological.Homomorphism import Homomorphism
 class OntDB:
 
-	def __init__(self, ont = []):
+	def __init__(self, ont=[]):
 		self._atoms = {}
 		self._size = len(ont)
 		for atom in ont:
@@ -28,7 +28,7 @@ class OntDB:
 	def add_atom(self, atom):
 		success = True
 		if atom.getId() in self._atoms.keys():
-			if not atom in self._atoms[atom.getId()]:
+			if atom not in self._atoms[atom.getId()]:
 				self._atoms[atom.getId()].append(atom)
 				self._size += 1
 			else:
@@ -45,7 +45,7 @@ class OntDB:
 			aux_ont_data = []
 			for atom in self._atoms[key]:
 				atom.map(mapping)
-				if (not (atom in aux_ont_data)):
+				if atom not in aux_ont_data:
 					aux_ont_data.append(atom)
 			aux_atoms[key] = aux_ont_data
 

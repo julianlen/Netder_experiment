@@ -1,7 +1,6 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from Diffusion_Process.NetDiffNode import NetDiffNode
-from Diffusion_Process.NetDiffEdge import NetDiffEdge
 from Diffusion_Process.NetDiffGraphElement import NetDiffGraphElement
 
 class NetDiffGraph(NetDiffGraphElement):
@@ -21,7 +20,6 @@ class NetDiffGraph(NetDiffGraphElement):
 			result = result + node.to_json_string() + ","
 		result = result[: (len(result) - 1)]
 		result = result + '], "edges": ['
-		#result = result + '], "links": ['
 
 		for edge in self._netDiffEdges:
 			result = result + edge.to_json_string() + ","
@@ -31,7 +29,7 @@ class NetDiffGraph(NetDiffGraphElement):
 
 		return result
 
-	def get_labels():
+	def get_labels(self):
 		return NetDiffGraph._labels
 
 	def get_components(self):
