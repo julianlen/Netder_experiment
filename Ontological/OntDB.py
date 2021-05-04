@@ -69,7 +69,10 @@ class OntDB:
 
 		return result
 
-
+#verifica si un objeto de esta clase (conjunto de objettos Atom) es equivalante a otro del mismo tipo
+#esto significa verificar si existe un homomorfismo que preserve estructura entre ambos conjuntos
+#Por ejemplo los conjuntos A = {p1(X_1, Y_1), p2(X_2, Y_2)} y B = {p1(X_3, Y_3), p2(X_4, Y_4)} son homomorficamente equivalentes porque
+#p1(X_1, Y_1) se puede mapear a p1(X_3, Y_3) y p2(X_2, Y_2) se puede mapear a p2(X_4, Y_4)
 	def is_equivalent(self, ont_db):
 		result = False
 		if self._size == ont_db.get_size():
@@ -95,17 +98,17 @@ class OntDB:
 				mapping = h.get_atoms_mapping(db1, db2)
 				if len(mapping) > 0:
 					
-					for possibility in mapping:
+					for key_pos in mapping:
 						clone_db1 = copy.deepcopy(db1)
 						aux_clone_db1 = copy.deepcopy(clone_db1)
 						clone_db2 = copy.deepcopy(db2)
 						aux_clone_db2 = copy.deepcopy(clone_db2)
-						for m in possibility:
-							for atom in clone_db1:
-								atom.map(m)
-							
-							for atom in clone_db2:
-								atom.map(m)
+						
+						for atom in clone_db1:
+							atom.map(mapping[key_pos])
+						
+						for atom in clone_db2:
+							atom.map(mapping[key_pos])
 
 						aux_result = True
 						for atom1 in clone_db1:

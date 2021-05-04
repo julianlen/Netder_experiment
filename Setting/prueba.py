@@ -3,17 +3,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from datetime import datetime
 import csv
 import portion
-import copy
 import random
 import string
 import subprocess
-from FakeNewsData.AugmentedDatasetCSVLiar import AugmentedDatasetCSVLiar
-from FakeNewsData.DatasetCSVLiar import DatasetCSVLiar
-from FakeNewsData.AugmentedDatasetTextFilesCelebrity import AugmentedDatasetTextFilesCelebrity
-from AFPostDatabase import AFPostDatabase
-from EarlyPoster import EarlyPoster
-from Closer import Closer
-from Evaluator import Evaluator
 from Diffusion_Process.NetDiffNode import NetDiffNode
 from Diffusion_Process.NetDiffEdge import NetDiffEdge
 from Diffusion_Process.NetDiffGraph import NetDiffGraph
@@ -23,7 +15,6 @@ from Diffusion_Process.GlobalLabel import GlobalLabel
 from Diffusion_Process.NetDiffLocalRule import NetDiffLocalRule
 from Diffusion_Process.NetDiffGlobalRule import NetDiffGlobalRule
 from Diffusion_Process.Average import Average
-from Diffusion_Process.Tipping import Tipping
 from Diffusion_Process.EnhancedTipping import EnhancedTipping
 from Ontological.NetDERKB import NetDERKB
 from Ontological.NetDB import NetDB
@@ -36,9 +27,7 @@ from Ontological.GRE import GRE
 from Ontological.Distinct import Distinct
 from Ontological.Variable import Variable
 from Ontological.Constant import Constant
-from Ontological.PredictionsFakeNewsRob import PredictionsFakeNewsRob
-from Ontological.Null import Null
-from Ontological.NetCompTarget import NetCompTarget
+from Ontological.Homomorphism import Homomorphism
 
 def test1():
 	nodes = [NetDiffNode('0'), NetDiffNode('1'), NetDiffNode('2'), NetDiffNode('3')]
@@ -225,7 +214,7 @@ def test2():
 
 
 	inicio_graph = datetime.now()
-	netDiffGraph = get_netDiffGraph(cant_nodes = 5000, cant_edges = 5000)
+	netDiffGraph = get_netDiffGraph(cant_nodes = 3000, cant_edges = 3000)
 	fin_graph = datetime.now()
 	print('tiempo creacion grafo', (fin_graph - inicio_graph))
 	netDiffFacts = get_NetDiffFacts(elements= netDiffGraph.getNodes(), labels = netDiffGraph.getNodes()[0].getLabels(), tmax = tmax)
@@ -267,10 +256,6 @@ inicio = datetime.now()
 
 #test1()
 test2()
-
-
-
-print() 
 
 fin = datetime.now()
 

@@ -1,8 +1,5 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-import portion
-from Diffusion_Process.NetDiffWorld import NetDiffWorld
-from Diffusion_Process.NetDiffNode import NetDiffNode
 from Diffusion_Process.NetDiffEdge import NetDiffEdge
 
 class NetDiffInterpretation:
