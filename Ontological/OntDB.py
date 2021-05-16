@@ -69,7 +69,6 @@ class OntDB:
 
 		return result
 
-
 	def is_equivalent(self, ont_db):
 		result = False
 		if self._size == ont_db.get_size():
@@ -89,23 +88,19 @@ class OntDB:
 				if key in self._atoms.keys():
 					db1 = db1 + self._atoms[key]
 				db2 = db2 + other_atoms[key]
-
 			if success:
 				h = Homomorphism()
 				mapping = h.get_atoms_mapping(db1, db2)
 				if len(mapping) > 0:
-					
-					for possibility in mapping:
+					for key_pos in mapping:
 						clone_db1 = copy.deepcopy(db1)
-						aux_clone_db1 = copy.deepcopy(clone_db1)
 						clone_db2 = copy.deepcopy(db2)
-						aux_clone_db2 = copy.deepcopy(clone_db2)
-						for m in possibility:
-							for atom in clone_db1:
-								atom.map(m)
-							
-							for atom in clone_db2:
-								atom.map(m)
+
+						for atom in clone_db1:
+							atom.map(mapping[key_pos])
+
+						for atom in clone_db2:
+							atom.map(mapping[key_pos])
 
 						aux_result = True
 						for atom1 in clone_db1:
@@ -118,9 +113,6 @@ class OntDB:
 							else:
 								aux_result = False
 								break
-
 						if aux_result:
 							result = True
-						
-
 		return result
