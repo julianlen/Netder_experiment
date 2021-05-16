@@ -14,9 +14,7 @@ class NetDB:
 		self._diff_facts = diff_facts
 
 	def _load_comp_atoms(self):
-		self._comp_atoms = {}
-		self._comp_atoms['node'] = []
-		self._comp_atoms['edge'] = []
+		self._comp_atoms = {'node': [], 'edge': []}
 		for node in self._net_diff_graph.getNodes():
 			self._comp_atoms['node'].append(Atom('node', [Constant(node.getId())]))
 

@@ -23,14 +23,14 @@ class NetDERKB:
 
     def add_ont_knowledge(self, atoms):
         success = False
-        copy_atoms = copy.deepcopy(atoms)
-        for atom in copy_atoms:
+        # copy_atoms = copy.deepcopy(atoms)
+        for atom in atoms:
             result = self._ont_db.add_atom(atom)
             success = success or result
-
         return success
 
     def add_net_knowledge(self, knowledge, time):
+        print(self._net_db)
         self._net_db.add_knowledge(knowledge, time)
 
     def add_facts(self, facts):
@@ -67,7 +67,7 @@ class NetDERKB:
         self._ont_db.apply_mapping(mapping)
 
     def get_data_from_pred(self, pred):
-        return self._ont_db.get_atoms_from_pred(pred) + self._net_db.get_comp_from_pred(pred)
+        return self._ont_db.get_atoms_from_pred(pred)  # + self._net_db.get_comp_from_pred(pred)
 
     def remove_atoms_from_pred(self, pred):
         self._ont_db.remove_atoms_from_pred(pred)

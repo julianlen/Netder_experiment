@@ -28,9 +28,9 @@ class Atom:
         result = {}
         if self.is_mapped(atom):
             for x in range(0, len(self._terms)):
-                if (not self._terms[x].isInstanced()):
+                if not self._terms[x].isInstanced():
                     result[self._terms[x].getId()] = atom.get_terms()[x]
-                elif (not atom.get_terms()[x].isInstanced()):
+                elif not atom.get_terms()[x].isInstanced():
                     result[atom.get_terms()[x].getId()] = self._terms[x]
 
         return result
@@ -39,11 +39,11 @@ class Atom:
         success = True
         for i in range(0, len(self._terms)):
             otherTerm = mapping.get(self._terms[i].getId())
-            if (otherTerm != None):
-                if (self._terms[i].can_be_instanced()):
+            if otherTerm is not None:
+                if self._terms[i].can_be_instanced():
                     self._terms.remove(self._terms[i])
                     self._terms.insert(i, otherTerm)
-                elif (not self._terms[i].getValue() == otherTerm.getValue()):
+                elif not self._terms[i].getValue() == otherTerm.getValue():
                     success = False
         return success
 

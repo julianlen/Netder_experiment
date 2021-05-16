@@ -51,6 +51,7 @@ class DataIngestionModule:
     # Ingest data will return data processed to be consumed for the knowledge database as in the diffusion graph
     def ingest_data(self):
         # Read dataset from csv_graph_location
+        self._dataset['value'] = self._dataset['value'].astype(float)
         self._dataset = self._dataset.drop(columns=['timestamp', 'callingFunction'])
         self._dataset = self._dataset[self._dataset["isError"] == 'None']
         self._dataset = self._dataset[self._dataset['to'] != 'None']
@@ -62,6 +63,8 @@ class DataIngestionModule:
         for index, tx in self._dataset.iterrows():
             self._orm.add_atom(
                 Atom('GasPrice', [Constant(tx['from']), Constant(tx['blockNumber']), Constant(tx['gasPrice'])]))
+            self._orm.add_atom(
+                Atom('Balance', [Constant(tx['from']), Constant(tx['blockNumber']), Constant(tx['value'])]))
 
         self._ndm.set_graph(self._dataset)
 
@@ -70,9 +73,6 @@ class DataIngestionModule:
 
     def get_orm(self):
         return self._orm
-
-    def get_ndm(self):
-        return self.ndm
 
     def new_data(self, data):
         # append data to _Dataset then ingest it.

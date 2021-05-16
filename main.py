@@ -1,43 +1,20 @@
 import os
 import sys
 import pandas as pd
-import networkx as nx
-import pandas as pd
-
-from Diffusion_Process.graph import DiffGraph
 from Ontological.GRE import GRE
-from Ontological.PredictionsFakeNewsRob import PredictionsFakeNewsRob
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-from datetime import datetime
 import csv
-import portion
-import copy
 import json
 from Setting.DataIngestionModule import DataIngestionModule, NetworkDiffusionModule, OntologicalReasoningModule
-from Setting.EarlyPoster import EarlyPoster
-from Setting.PreMember import PreMember
-from Setting.Closer import Closer
-from Setting.NewsCategory import NewsCategory
-from Setting.Evaluator import Evaluator
-from Diffusion_Process.NetDiffGraph import NetDiffGraph
-from Diffusion_Process.NLocalLabel import NLocalLabel
-from Diffusion_Process.GlobalLabel import GlobalLabel
-from Diffusion_Process.NetDiffLocalRule import NetDiffLocalRule
-from Diffusion_Process.NetDiffGlobalRule import NetDiffGlobalRule
-from Diffusion_Process.Average import Average
-from Diffusion_Process.EnhancedTipping import EnhancedTipping
 from Ontological.NetDERKB import NetDERKB
 from Ontological.NetDB import NetDB
 from Ontological.NetDERChase import NetDERChase
 from Ontological.NetDERQuery import NetDERQuery
 from Ontological.NetDERTGD import NetDERTGD
-from Ontological.NetDEREGD import NetDEREGD
 from Ontological.Atom import Atom
-from Ontological.Distinct import Distinct
 from Ontological.Variable import Variable
 from Ontological.Constant import Constant
-from Ontological.NetCompTarget import NetCompTarget
 
 
 def save_csv(csv_source, data):
@@ -98,24 +75,32 @@ def save_csv(csv_source, data):
 #     rr['bn_fn_det2'] = None
 #     for header in get_csv_headers('../reduced_result_exp_headers.csv'):
 #         rr[str(header)] = {'total_value': 0, 'total_samples': int(setting_values["cant_run"])}
+def assert_column_name(df, name):
+    assert (not name is list(df.columns.values))
+
 
 def main():
     with open('./config.json') as f:
         setting_values = json.load(f)
     for run in range(int(setting_values["run_times"])):
-        # start_setting = datetime.now()
         t_max = int(setting_values["t_max"])
-        # csv_graph_location = setting_values["csv_graph_location"]
 
         df = pd.read_csv(setting_values["dataset_location"])
-
-        threshold_gas_price = df['gasPrice'].max() * 0.8
+        df['value'] = df['value'].astype(float)
+        assert_column_name(df, 'gasPrice')
+        threshold_gas_price = df['gasPrice'].max() * 0.8  # Based on the paper
+        assert_column_name(df, 'value')
+        threshold_bal = float(df['value'].max()) * 0.8  # Based on the paper
 
         # This section should be an API or an external file, where a domain expert writes the rules.
         atom_gas_price = Atom('GasPrice', [Variable('ADD'), Variable('BN'), Variable('GP')])
-        atom_greater_that = GRE(Variable('GasPrice'), Constant(threshold_gas_price))
+        atom_balance = Atom('Balance', [Variable('ADD'), Variable('BN'), Variable('BAL')])
+        atom_gp_greater_that = GRE(Variable('GP'), Constant(threshold_gas_price))
+        atom_bal_greater_that = GRE(Variable('BAL'), Constant(threshold_bal))
         atom_hyp = Atom('hyp_mal_account', [Variable('ADD')])
-        tgd_rule = NetDERTGD(rule_id=1, ont_body=[atom_gas_price, atom_greater_that], ont_head=[atom_hyp])
+
+        tgd_gp_rule = NetDERTGD(rule_id=1, ont_body=[atom_gas_price, atom_gp_greater_that], ont_head=[atom_hyp])
+        tgd_bal_rule = NetDERTGD(rule_id=2, ont_body=[atom_balance, atom_bal_greater_that], ont_head=[atom_hyp])
 
         query = NetDERQuery(exist_var=[], ont_cond=[Atom('hyp_mal_account', [Variable('ADD')])],
                             time=(t_max, t_max))
@@ -123,13 +108,17 @@ def main():
         ndm = NetworkDiffusionModule()
         orm = OntologicalReasoningModule()
         dim = DataIngestionModule(setting_values["dataset_location"], orm, ndm)
-        kb = NetDERKB(ont_data=dim.get_orm().get_atoms(), net_db=[], netder_tgds=[tgd_rule], netder_egds=[],
+        # NetDerKB = (D, G, E, P)
+        kb = NetDERKB(ont_data=dim.get_orm().get_atoms(), net_db=NetDB(), netder_tgds=[tgd_gp_rule, tgd_bal_rule],
+                      netder_egds=[],
                       netdiff_lrules=[], netdiff_grules=[])
-        #
-        orm.add_tgd(tgd_rule)
+
+        orm.add_tgd(tgd_gp_rule)
+        orm.add_tgd(tgd_bal_rule)
         chase = NetDERChase(kb, t_max)
-        answers = chase.answer_query(query, 1)
+        answers = chase.answer_query(query, 1)  # 1: One-shot Chase
         print(answers)
+        print(answers[0])
 
         # ont_db = []
         # net_db = []

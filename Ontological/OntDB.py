@@ -1,11 +1,18 @@
 import copy
 from Ontological.Homomorphism import Homomorphism
+
+# This class is a database for atoms.
+# _atoms = dict{atom_id : [atom]}
+
+
 class OntDB:
 
-	def __init__(self, ont=[]):
+	def __init__(self, ont=None):
+		if ont is None:
+			ont = []
 		self._atoms = {}
 		self._size = len(ont)
-		for atom in ont:
+		for atom in ont: 	# It fills _atoms
 			if atom.getId() in self._atoms.keys():
 				self._atoms[atom.getId()].append(atom)
 			else:
@@ -15,7 +22,7 @@ class OntDB:
 		result = []
 		if pred in self._atoms.keys():
 			result = self._atoms[pred]
-		
+
 		return result
 
 	def remove_atoms_from_pred(self, pred):
@@ -26,18 +33,18 @@ class OntDB:
 				self._size -= length
 
 	def add_atom(self, atom):
-		success = True
+		atom_added = True
 		if atom.getId() in self._atoms.keys():
 			if atom not in self._atoms[atom.getId()]:
 				self._atoms[atom.getId()].append(atom)
 				self._size += 1
 			else:
-				success = False
+				return False  # The atom has been already added
 		else:
 			self._atoms[atom.getId()] = [atom]
 			self._size += 1
 
-		return success
+		return atom_added
 
 	def apply_mapping(self, mapping):
 		aux_atoms = {}
@@ -53,10 +60,10 @@ class OntDB:
 
 	def get_atoms(self):
 		return self._atoms
-	
+
 	def get_size(self):
 		return self._size
-	
+
 	def _get_equivalent_index(self, atoms, atom):
 		result = None
 		if atom.getId() in atoms.keys():
@@ -92,6 +99,7 @@ class OntDB:
 				h = Homomorphism()
 				mapping = h.get_atoms_mapping(db1, db2)
 				if len(mapping) > 0:
+
 					for key_pos in mapping:
 						clone_db1 = copy.deepcopy(db1)
 						clone_db2 = copy.deepcopy(db2)

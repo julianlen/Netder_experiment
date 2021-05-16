@@ -1,14 +1,13 @@
 import os, sys
 
+from Diffusion_Process.NetDiffProgram import NetDiffProgram
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import copy
-import bisect
-from datetime import datetime
 from Ontological.Variable import Variable
 from Ontological.Null import Null
 from Ontological.OntDB import OntDB
 from Ontological.Homomorphism import Homomorphism
-from Diffusion_Process.NetDiffProgram import NetDiffProgram
 from Diffusion_Process.NetDiffInterpretation import NetDiffInterpretation
 
 
@@ -23,14 +22,14 @@ class NetDERChase:
 
     def _get_atoms_mapping(self, atoms, data_base):
         h = Homomorphism()
-        aux_result = h.get_atoms_mapping(atoms, data_base)
-        return aux_result
+        return h.get_atoms_mapping(atoms, data_base) # Genera el homomorfismo entre los atomos de atoms y todos en data_base
 
     def _get_candidate_atoms(self, rule):
         candidates = []
         atom_ids = set()
         for atom in rule.get_ont_body():
             if not atom.getId() in atom_ids:
+                print(atom.getId())
                 candidates = candidates + self._kb.get_data_from_pred(atom.getId())
                 atom_ids.add(atom.getId())
 
@@ -53,53 +52,55 @@ class NetDERChase:
         return result
 
     def get_body_mapping(self, rule, time):
-        net_db = []
-        cloned_net_body = copy.deepcopy(rule.get_net_body())
-        for nct in cloned_net_body:
-            net_db.append(nct.getComponent())
+        # net_db = []
+        # cloned_net_body = copy.deepcopy(rule.get_net_body())
+        # for nct in cloned_net_body:
+        #     net_db.append(nct.getComponent())
 
-        body_mapping = self._search_body_mapping(rule.get_ont_body() + net_db)
+        # body_mapping = self._search_body_mapping(rule.get_ont_body() + net_db)
+        body_mapping = self._search_body_mapping(rule.get_ont_body())
 
         if body_mapping is None:
-            body_mapping = self._get_atoms_mapping(rule.get_ont_body() + net_db, self._get_candidate_atoms(rule))
+            body_mapping = self._get_atoms_mapping(rule.get_ont_body(), self._get_candidate_atoms(rule)) # Obtiene los atomos candidatos para mapear el cuerpo
+            # body_mapping = self._get_atoms_mapping(rule.get_ont_body() + net_db, self._get_candidate_atoms(rule))
             if len(body_mapping) > 0:
-                ont_db = OntDB(rule.get_ont_body() + net_db)
+                # ont_db = OntDB(rule.get_ont_body() + net_db)
+                ont_db = OntDB(rule.get_ont_body())
                 self._body_mapping_his.append((ont_db, body_mapping))
 
         aux_body_mapping = {}
         if len(body_mapping) > 0:
             for key in body_mapping.keys():
-                if len(time) > 0:
-                    net_db = []
-                    cloned_net_body = copy.deepcopy(rule.get_net_body())
-                    for nct in cloned_net_body:
-                        net_db.append(nct.getComponent())
-                    for atom in net_db:
-                        atom.map(body_mapping[key])
-                    if len(cloned_net_body) > 0:
-                        net_db = []
-                        cloned_net_body = copy.deepcopy(rule.get_net_body())
-                        for nct in cloned_net_body:
-                            net_db.append(nct.getComponent())
-                        for atom in net_db:
-                            atom.map(body_mapping[key])
-                        for nct in cloned_net_body:
-                            comp = self._kb.get_comp_from_atom(nct.getComponent())
-                            for t in range(time[0], time[1] + 1):
-                                if self._net_diff_interpretation.isSatisfied(t, comp, (nct.getLabel(), nct.getBound())):
-                                    if self._net_diff_interpretation.areSatisfied(t, self._kb.get_net_diff_graph(),
-                                                                                  rule.get_global_cond()):
-                                        aux_body_mapping[key] = body_mapping[key]
-
-                    else:
-                        for t in range(time[0], time[1] + 1):
-                            if self._net_diff_interpretation.areSatisfied(t, self._kb.get_net_diff_graph(),
-                                                                          rule.get_global_cond()):
-                                aux_body_mapping[key] = body_mapping[key]
-
-                else:
-                    aux_body_mapping = body_mapping
-
+                # if len(time) > 0:
+                #     net_db = []
+                #     cloned_net_body = copy.deepcopy(rule.get_net_body())
+                #     for nct in cloned_net_body:
+                #         net_db.append(nct.getComponent())
+                #     for atom in net_db:
+                #         atom.map(body_mapping[key])
+                #     if len(cloned_net_body) > 0:
+                #         net_db = []
+                #         cloned_net_body = copy.deepcopy(rule.get_net_body())
+                #         for nct in cloned_net_body:
+                #             net_db.append(nct.getComponent())
+                #         for atom in net_db:
+                #             atom.map(body_mapping[key])
+                #         for nct in cloned_net_body:
+                #             comp = self._kb.get_comp_from_atom(nct.getComponent())
+                #             for t in range(time[0], time[1] + 1):
+                #                 if self._net_diff_interpretation.isSatisfied(t, comp, (nct.getLabel(), nct.getBound())):
+                #                     if self._net_diff_interpretation.areSatisfied(t, self._kb.get_net_diff_graph(),
+                #                                                                   rule.get_global_cond()):
+                #                         aux_body_mapping[key] = body_mapping[key]
+                #
+                #     else:
+                #         for t in range(time[0], time[1] + 1):
+                #             if self._net_diff_interpretation.areSatisfied(t, self._kb.get_net_diff_graph(),
+                #                                                           rule.get_global_cond()):
+                #                 aux_body_mapping[key] = body_mapping[key]
+                #
+                # else:
+                aux_body_mapping = body_mapping
         body_mapping = aux_body_mapping
 
         return body_mapping
@@ -198,7 +199,7 @@ class NetDERChase:
                             new_mapping[term.getId()] = cloned_ont_body2[index].get_terms()[term_i]
                         elif cloned_ont_body2[index].get_terms()[term_i].can_be_instanced():
                             new_mapping[cloned_ont_body2[index].get_terms()[term_i].getId()] = term
-                        elif (not term.getValue() == cloned_ont_body2[index].get_terms()[term_i].getValue()):
+                        elif not term.getValue() == cloned_ont_body2[index].get_terms()[term_i].getValue():
                             success = False
                             break
                         term_i = term_i + 1
@@ -210,67 +211,41 @@ class NetDERChase:
                         elif cloned_net_body2[index].getComponent().get_terms()[term_i].can_be_instanced():
                             new_mapping[cloned_net_body2[index].getComponent().get_terms()[term_i].getId()] = term
                         elif (
-                        not term.getValue() == cloned_net_body2[index].getComponent().get_terms()[term_i].getValue()):
+                                not term.getValue() == cloned_net_body2[index].getComponent().get_terms()[
+                                    term_i].getValue()):
                             success = False
                             break
                         term_i = term_i + 1
-            if (success):
+            if success:
                 self._kb.apply_map(new_mapping)
 
         return success
 
     def answer_query(self, query, int_bound):
-        result = []
-        seguir = True
+        # result = []
+        done = False
         counter = 0
+        mapping = {}
         self._net_diff_interpretation = NetDiffInterpretation(self._kb.get_net_diff_graph(), self._tmax)
-        while (counter <= int_bound and seguir):
+        while (counter <= int_bound) and not done:
             mapping = {}
-            while (seguir):
-                new_knowledge = [[], []]
-                index = 0
-                for tgd in self._kb.get_netder_tgds():
-                    inicio = datetime.now()
-                    TGD_result = self.applyStepTGDChase(tgd, query.get_time())
-                    fin = datetime.now()
-                    index += 1
-                    new_knowledge[0] = new_knowledge[0] + TGD_result[0]
-                    new_knowledge[1] = new_knowledge[1] + TGD_result[1]
-
-                success = self._kb.add_ont_knowledge(new_knowledge[0])
-                self._kb.add_net_knowledge(new_knowledge[1], query.get_time())
-
-                for egd in self._kb.get_netder_egds():
-                    seguir = self.applyStepEGDChase(egd, query.get_time())
-                    print('seguir egd')
-                    print(seguir)
-                    if not seguir:
-                        break
+            while not done:
+                # new_knowledge = [ont_knowledge, net_knowledge]
+                new_knowledge, done, success = self.execute_chase(query)
                 self._body_mapping_his = []
-                if seguir:
-                    qa_success = True
-                    mapping = {}
-                    for q in query.get_disjoint_queries():
-                        candidates = self._get_candidate_atoms(q)
-                        q_mapping = self._get_atoms_mapping(q.get_ont_body(), candidates)
-
-                        mapping.update(q_mapping)
-
-                        if not (len(q_mapping) > 0):
-                            qa_success = False
-                    if (qa_success) or ((not success) and (len(new_knowledge[1]) == 0)):
-                        seguir = False
+                if not done:
+                    done, mapping = self.evaluate_query(done, mapping, new_knowledge, query, success)
                 else:
                     mapping = {}
-
-            net_diff_program = NetDiffProgram(self._kb.get_net_diff_graph(), self._tmax, self._kb.get_net_diff_facts(),
-                                              self._kb.get_net_diff_lrules(), self._kb.get_net_diff_grules())
-            self._net_diff_interpretation = net_diff_program.diffusion()
-            result = None
-            seguir = True
+            self.diffusion_process()
+            done = False
             counter = counter + 1
-            print('final net_diff_interpretation')
-            print(str(self._net_diff_interpretation))
+            # print('final net_diff_interpretation')
+            # print(str(self._net_diff_interpretation))
+        #  Answer construction
+        return self.answer_construction(mapping, query)
+
+    def answer_construction(self, mapping, query):
         result = []
         for key_pos in mapping.keys():
             aux_result_mapping = {}
@@ -279,5 +254,39 @@ class NetDERChase:
                     aux_result_mapping[key] = mapping[key_pos][key]
             if len(aux_result_mapping) > 0:
                 result.append(aux_result_mapping)
-
         return result
+
+    def diffusion_process(self):
+        net_diff_program = NetDiffProgram(self._kb.get_net_diff_graph(), self._tmax,
+                                          self._kb.get_net_diff_facts(), self._kb.get_net_diff_lrules(),
+                                          self._kb.get_net_diff_grules())
+        self._net_diff_interpretation = net_diff_program.diffusion()
+
+    def evaluate_query(self, done, mapping, new_knowledge, query, success):
+        query_answer_success = True
+        for q in query.get_disjoint_queries():
+            candidates = self._get_candidate_atoms(q)
+            q_mapping = self._get_atoms_mapping(q.get_ont_body(), candidates)
+            mapping.update(q_mapping)
+            if not (len(q_mapping) > 0):
+                query_answer_success = False
+        if query_answer_success or ((not success) and (len(new_knowledge[1]) == 0)):
+            done = True
+        return done, mapping
+
+    def execute_chase(self, query):
+        done = False
+        new_knowledge = [[], []]
+        for tgd in self._kb.get_netder_tgds():
+            TGD_result = self.applyStepTGDChase(tgd, query.get_time())
+            new_knowledge[0] = new_knowledge[0] + TGD_result[0]  # D
+            new_knowledge[1] = new_knowledge[1] + TGD_result[1]  # G
+        success = self._kb.add_ont_knowledge(new_knowledge[0])
+        self._kb.add_net_knowledge(new_knowledge[1], query.get_time())
+        for egd in self._kb.get_netder_egds():
+            done = self.applyStepEGDChase(egd, query.get_time())
+            print('seguir egd')
+            print(done)
+            if done:
+                break
+        return new_knowledge, done, success
