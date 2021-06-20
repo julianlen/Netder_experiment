@@ -29,7 +29,6 @@ class NetDERChase:
         atom_ids = set()
         for atom in rule.get_ont_body():
             if not atom.getId() in atom_ids:
-                print(atom.getId())
                 candidates = candidates + self._kb.get_data_from_pred(atom.getId())
                 atom_ids.add(atom.getId())
 

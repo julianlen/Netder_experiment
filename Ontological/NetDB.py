@@ -66,9 +66,9 @@ class NetDB:
 		for nct in knowledge:
 			node = self._get_node_from_atom(nct.getComponent())
 			edge = self._get_edge_from_atom(nct.getComponent())
-			if (not node is None):
+			if node is not None:
 				self._net_diff_graph.add_node(node)
-			elif (not edge is None):
+			elif edge is not None:
 				self._net_diff_graph.add_edge(edge)
 		self._load_comp_atoms()
 

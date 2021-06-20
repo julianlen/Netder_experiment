@@ -30,7 +30,6 @@ class NetDERKB:
         return success
 
     def add_net_knowledge(self, knowledge, time):
-        print(self._net_db)
         self._net_db.add_knowledge(knowledge, time)
 
     def add_facts(self, facts):

@@ -6,7 +6,7 @@ from Ontological.GRE import GRE
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import csv
 import json
-from Setting.DataIngestionModule import DataIngestionModule, NetworkDiffusionModule, OntologicalReasoningModule
+from Setting.DataIngestionModule import DataIngestionModule
 from Ontological.NetDERKB import NetDERKB
 from Ontological.NetDB import NetDB
 from Ontological.NetDERChase import NetDERChase
@@ -14,7 +14,6 @@ from Ontological.NetDERQuery import NetDERQuery
 from Ontological.NetDERTGD import NetDERTGD
 from Ontological.Atom import Atom
 from Ontological.Variable import Variable
-from Ontological.Constant import Constant
 
 
 def save_csv(csv_source, data):
@@ -80,6 +79,20 @@ def assert_column_name(df, name):
 
 
 def main():
+    TH_GAS_PR = 'TH_GAS_PR'
+    TH_BAL_OUT = 'TH_BAL_OUT'
+    TH_BAL_IN = 'TH_BAL_IN'
+    TH_DG_OUT = 'TH_DG_OU'
+    TH_DG_IN = 'TH_DG_IN'
+    GAS_PRICE = 'GP'
+    OUT_DEGREE = 'OUTDEG'
+    IN_DEGREE = 'INDEG'
+    IN_BALANCE = 'INBAL'
+    OUT_BALANCE = 'OUTBAL'
+    BLOCK_NUMBER = 'BN'
+    ADDRESS = 'ADDR'
+    SD = 'SD'
+
     with open('./config.json') as f:
         setting_values = json.load(f)
     for run in range(int(setting_values["run_times"])):
@@ -88,37 +101,80 @@ def main():
         df = pd.read_csv(setting_values["dataset_location"])
         df['value'] = df['value'].astype(float)
         assert_column_name(df, 'gasPrice')
-        threshold_gas_price = df['gasPrice'].max() * 0.8  # Based on the paper
         assert_column_name(df, 'value')
-        threshold_bal = float(df['value'].max()) * 0.8  # Based on the paper
 
         # This section should be an API or an external file, where a domain expert writes the rules.
-        atom_gas_price = Atom('GasPrice', [Variable('ADD'), Variable('BN'), Variable('GP')])
-        atom_balance = Atom('Balance', [Variable('ADD'), Variable('BN'), Variable('BAL')])
-        atom_gp_greater_that = GRE(Variable('GP'), Constant(threshold_gas_price))
-        atom_bal_greater_that = GRE(Variable('BAL'), Constant(threshold_bal))
-        atom_hyp = Atom('hyp_mal_account', [Variable('ADD')])
+        print('Dataset atoms')
+        #   Dataset atoms
+        atom_gas_price = Atom('GasPrice', [Variable(SD), Variable(ADDRESS), Variable(BLOCK_NUMBER), Variable(GAS_PRICE)])
+        atom_in_balance = Atom('In_Balance',
+                               [Variable(SD), Variable(ADDRESS), Variable(BLOCK_NUMBER), Variable(IN_BALANCE)])
+        atom_out_balance = Atom('Out_Balance',
+                                [Variable(SD), Variable(ADDRESS), Variable(BLOCK_NUMBER), Variable(OUT_BALANCE)])
+        atom_in_degree = Atom('InDegree', [Variable(SD), Variable(ADDRESS), Variable(BLOCK_NUMBER), Variable(IN_DEGREE)])
+        atom_out_degree = Atom('OutDegree',
+                               [Variable(SD), Variable(ADDRESS), Variable(BLOCK_NUMBER), Variable(OUT_DEGREE)])
+        atom_hyp = Atom('hyp_mal_account', [Variable(ADDRESS)])
 
-        tgd_gp_rule = NetDERTGD(rule_id=1, ont_body=[atom_gas_price, atom_gp_greater_that], ont_head=[atom_hyp])
-        tgd_bal_rule = NetDERTGD(rule_id=2, ont_body=[atom_balance, atom_bal_greater_that], ont_head=[atom_hyp])
+        #   Threshold atoms
+        print('Threshold atoms')
+        atom_thr_in_degree = Atom('Thr_in_degree', [Variable(ADDRESS), Variable(SD), Variable(TH_DG_IN)])
+        atom_thr_out_degree = Atom('Thr_out_degree', [Variable(ADDRESS), Variable(SD), Variable(TH_DG_OUT)])
+        atom_thr_in_bal = Atom('Thr_in_bal', [Variable(ADDRESS), Variable(SD), Variable(TH_BAL_IN)])
+        atom_thr_out_bal = Atom('Thr_out_bal', [Variable(ADDRESS), Variable(SD), Variable(TH_BAL_OUT)])
+        atom_thr_gas_pr = Atom('Thr_gas_price', [Variable(ADDRESS), Variable(SD), Variable(TH_GAS_PR)])
 
-        query = NetDERQuery(exist_var=[], ont_cond=[Atom('hyp_mal_account', [Variable('ADD')])],
+        #   Greater Than (>) atoms
+        print('Greater Than (>) atoms')
+        atom_gp_greater_that = GRE(Variable(GAS_PRICE), Variable(TH_GAS_PR))
+        atom_in_degree_greater_that = GRE(Variable(IN_DEGREE), Variable(TH_DG_IN))
+        atom_out_degree_greater_that = GRE(Variable(OUT_DEGREE), Variable(TH_DG_OUT))
+        atom_bal_in_greater_that = GRE(Variable(IN_BALANCE), Variable(TH_BAL_IN))
+        atom_bal_out_greater_that = GRE(Variable(OUT_BALANCE), Variable(TH_BAL_OUT))
+
+        # Rules
+        print('Rules')
+        tgd_gp_rule = NetDERTGD(rule_id=1, ont_body=[atom_gas_price, atom_thr_gas_pr, atom_gp_greater_that],
+                                ont_head=[atom_hyp])
+        tgd_in_bal_rule = NetDERTGD(rule_id=2, ont_body=[atom_in_balance, atom_thr_in_bal, atom_bal_in_greater_that],
+                                    ont_head=[atom_hyp])
+        tgd_out_bal_rule = NetDERTGD(rule_id=3,
+                                     ont_body=[atom_out_balance, atom_thr_out_bal, atom_bal_out_greater_that],
+                                     ont_head=[atom_hyp])
+        tgd_in_degree_rule = NetDERTGD(rule_id=4,
+                                       ont_body=[atom_in_degree, atom_thr_in_degree, atom_in_degree_greater_that],
+                                       ont_head=[atom_hyp])
+        tgd_out_degree_rule = NetDERTGD(rule_id=5,
+                                        ont_body=[atom_out_degree, atom_thr_out_degree, atom_out_degree_greater_that],
+                                        ont_head=[atom_hyp])
+
+        query = NetDERQuery(exist_var=[], ont_cond=[atom_hyp],
                             time=(t_max, t_max))
 
-        ndm = NetworkDiffusionModule()
-        orm = OntologicalReasoningModule()
-        dim = DataIngestionModule(setting_values["dataset_location"], orm, ndm)
-        # NetDerKB = (D, G, E, P)
-        kb = NetDERKB(ont_data=dim.get_orm().get_atoms(), net_db=NetDB(), netder_tgds=[tgd_gp_rule, tgd_bal_rule],
+        kb = NetDERKB([], net_db=NetDB(),
+                      netder_tgds=[tgd_gp_rule, tgd_in_bal_rule, tgd_out_bal_rule,
+                                   tgd_in_degree_rule,
+                                   tgd_out_degree_rule],
                       netder_egds=[],
-                      netdiff_lrules=[], netdiff_grules=[])
+                      netdiff_lrules=[], netdiff_grules=[]
+                      )
 
-        orm.add_tgd(tgd_gp_rule)
-        orm.add_tgd(tgd_bal_rule)
+        DataIngestionModule(setting_values["dataset_location"], setting_values["sub_dataset"], kb)
+        print('Entrando')
+        #   NetDerKB = (D, G, E, P)
+        # kb = NetDERKB(ont_data=dim.get_atoms(), net_db=NetDB(),
+        #               netder_tgds=[tgd_gp_rule, tgd_in_bal_rule, tgd_out_bal_rule,
+        #                            tgd_in_degree_rule,
+        #                            tgd_out_degree_rule],
+        #               netder_egds=[],
+        #               netdiff_lrules=[], netdiff_grules=[]
+        #               )
+        print('Saliendo')
         chase = NetDERChase(kb, t_max)
         answers = chase.answer_query(query, 1)  # 1: One-shot Chase
-        print(answers)
-        print(answers[0])
+        print(len(answers))
+        print(len(df['from'].unique()))
+        # print(answers[0])
 
         # ont_db = []
         # net_db = []
