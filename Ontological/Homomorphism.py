@@ -1,4 +1,13 @@
+from Ontological.OntQuery import OntQuery
+from Ontological.Constant import Constant
+from ATLAST.parsing import parser
+from ATLAST.codegen.symtable import SymTable
+from ATLAST.codegen.ir_generator import IRGenerator
+from ATLAST.codegen.sql_generator import SQLGenerator
+from ATLAST.dbbackend import schema as schema
 import copy
+import json
+import mariadb
 class Homomorphism:
 
 	#obtiene todos los posibles mapeos de un atomo "atom" en una base de datos "data_base"
@@ -25,7 +34,7 @@ class Homomorphism:
 		return result
 
 	#busca todos los posibles mapeos entre un conjunto de atomos (atoms) y una base de datos (data_base)
-	def get_atoms_mapping(self, atoms, data_base):
+	def _get_atoms_mapping(self, atoms, data_base):
 		#"aux_result" es un diccionario que almacena los posibles mapeos (podrian ser mapeos parciales, tal vez no todos los atomos fueron mapeados aun) que se van obteniendo
 		#por lo tanto cada elemento del diccionario es un mapeo candidato
 		#la clave del diccionario es un transformacion del mapeo a string (ver arriba "get_atom_mapping(self, atom, data_base)") y el valor el mapeo en si
@@ -70,3 +79,82 @@ class Homomorphism:
 						aux_mapped_atoms[ma_key + mapping_key] = cloned_mapped_atoms
 
 		return aux_result
+
+	
+	def get_atoms_mapping(self, atoms, data_base, config_db=None):
+		initial_mapping = self._get_atoms_mapping(atoms, data_base)
+		if config_db is not None:
+			# Parse the input file
+			print("Parsing...")
+			query = OntQuery(exist_var = [], ont_cond = atoms)
+			print('str(query)', str(query))
+			result = parser.parse_input(str(query))
+
+			# Print out the generated AST
+			print("AST generated:")
+			print(result)
+
+
+
+			# Set up a symbol table and code generation visitor
+			symbolTable = SymTable()
+
+			codegenVisitor = IRGenerator(schema.Schema())
+			sqlGeneratorVisitor = SQLGenerator()
+
+			# Generate the symbol table
+			print("Generating symbol table...")
+			result.generateSymbolTable(symbolTable)
+
+			# Show the generated symbol table
+			print("Symbol table generated:")
+			print(symbolTable)
+
+
+
+			# Perform the code generation into SQLIR using the visitor
+			print("Generating SQLIR...")
+			result.accept(codegenVisitor)
+
+			# Print out the IR
+			print(codegenVisitor._IR_stack[0])
+
+			codegenVisitor._IR_stack[0].accept(sqlGeneratorVisitor)
+			print(sqlGeneratorVisitor._sql)
+
+			with open(config_db) as config_json:
+				config_data = json.load(config_json)
+			try:
+			    con = mariadb.connect(
+			        user=config_data['user'],
+			        password=config_data['password'],
+			        host=config_data['host'],
+			        port=config_data['port'],
+			        database=config_data['database']
+			        )
+			except mariadb.Error as e:
+				print(f"Error connecting to MariaDB Platform: {e}")
+				sys.exit(1)
+
+			cur = con.cursor()
+			cur.execute(sqlGeneratorVisitor._sql)
+			var_list = query.get_variables()
+
+			new_mapping = {}
+			for row in cur:
+				mapping = {}
+				key_mapping = ""
+				for index in range(len(var_list)):
+					key = var_list[index].getId()
+					mapping[key] = Constant(row[index])
+					key_mapping = key_mapping + '(' + str(key) + ',' + str(mapping[key]) + ')'
+
+				new_mapping[key_mapping] = mapping
+
+			con.commit()
+			con.close()
+
+			initial_mapping.update(new_mapping)
+
+		return initial_mapping
+

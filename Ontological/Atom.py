@@ -1,3 +1,4 @@
+from Ontological.Variable import Variable
 import copy
 
 class Atom:
@@ -11,6 +12,15 @@ class Atom:
 
 	def get_terms(self):
 		return self._terms
+
+	def get_variables(self):
+		result = {}
+		for term in self._terms:
+			if isinstance(term, Variable):
+				result[term.getId()] = copy.deepcopy(term)
+		result = result.values()
+
+		return result
 
 	def is_mapped(self, atom):
 		result = False
@@ -46,9 +56,13 @@ class Atom:
 		return success
 
 	def __str__(self):
-		result = self._id
+		result = self._id + '('
 		for term in self._terms:
-			result = result + '\n' +str(term)
+			result = result + str(term.getId()) + ','
+
+		#saco coma que sobra y agrego parentesis de cierre
+		result = result[:-1] + ')'
+
 
 		return result
 

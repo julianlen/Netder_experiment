@@ -12,9 +12,10 @@ from Diffusion_Process.NetDiffInterpretation import NetDiffInterpretation
 
 class NetDERChase:
 
-	def __init__(self, kb, tmax = 1):
+	def __init__(self, kb, tmax = 1, config_db = 'config_db.json'):
 		self._kb = kb
 		self._tmax = tmax
+		self._config_db = config_db
 		self._net_diff_interpretation = NetDiffInterpretation(self._kb.get_net_diff_graph(), self._tmax)
 		#se utiliza para guardar una lista de pares "(conjunto de atomos, mapeo/homomorfismo)""
 		self._body_mapping_his = []
@@ -23,10 +24,10 @@ class NetDERChase:
 		self._rule_map_his = {}
 
 
-	def _get_atoms_mapping(self, atoms, data_base):
+	def _get_atoms_mapping(self, atoms, data_base, config_db = None):
 		h = Homomorphism()
 		#se busca mapaer los atomos "atoms" en la base de datos "data_base" a traves de un homomorfismo h
-		aux_result = h.get_atoms_mapping(atoms, data_base)
+		aux_result = h.get_atoms_mapping(atoms, data_base, config_db)
 		return aux_result
 
 	#devuelve los atomos de la base de datos ontologica y de la base de datos de red (en este caso atomos de nodos o arcos) que son candidatos
@@ -79,7 +80,7 @@ class NetDERChase:
 		#se verifica si el cuerpo de la regla NO puede mapearse a traves de un homomorfismo ya calculado
 		if body_mapping is None:
 			#se busca mapear los atomos del cuerpo ontologico y los atomos relativos de nodos y arcos, en la base de datos
-			body_mapping = self._get_atoms_mapping(rule.get_ont_body() + net_db, self._get_candidate_atoms(rule))
+			body_mapping = self._get_atoms_mapping(rule.get_ont_body() + net_db, self._get_candidate_atoms(rule), self._kb.get_config_db())
 			if len(body_mapping) > 0:
 				ont_db = OntDB(rule.get_ont_body() + net_db)
 				self._body_mapping_his.append((ont_db, body_mapping))
@@ -358,7 +359,7 @@ class NetDERChase:
 					#se buscan todos los mapeos para la consulta
 					for q in query.get_disjoint_queries():
 						candidates = self._get_candidate_atoms(q)
-						q_mapping = self._get_atoms_mapping(q.get_ont_body(), candidates)
+						q_mapping = self._get_atoms_mapping(q.get_ont_body(), candidates, self._kb.get_config_db())
 						
 						mapping.update(q_mapping)
 						

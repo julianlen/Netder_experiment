@@ -1,0 +1,1057 @@
+Created by PLY version 3.4 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> formula
+Rule 1     formula -> atomicFormula
+Rule 2     formula -> LBRACKET formula RBRACKET
+Rule 3     formula -> formula IFF formula
+Rule 4     formula -> formula IMPLIES formula
+Rule 5     formula -> formula OR formula
+Rule 6     formula -> formula AND formula
+Rule 7     formula -> NOT formula
+Rule 8     quantifierList -> quantifierList COMMA IDENTIFIER
+Rule 9     quantifierList -> IDENTIFIER
+Rule 10    formula -> FORALL quantifierList LBRACKET formula RBRACKET
+Rule 11    formula -> THEREEXISTS quantifierList LBRACKET formula RBRACKET
+Rule 12    atomicFormula -> IDENTIFIER LBRACKET termList RBRACKET
+Rule 13    atomicFormula -> term EQ term
+Rule 14    atomicFormula -> term LT term
+Rule 15    atomicFormula -> term LTE term
+Rule 16    atomicFormula -> term GT term
+Rule 17    atomicFormula -> term GTE term
+Rule 18    atomicFormula -> term NEQ term
+Rule 19    termList -> termList COMMA term
+Rule 20    termList -> term
+Rule 21    term -> CONSTANT
+Rule 22    term -> IDENTIFIER
+Rule 23    term -> STRINGLIT
+Rule 24    term -> TRUE
+Rule 25    term -> FALSE
+
+Terminals, with rules where they appear
+
+AND                  : 6
+COMMA                : 8 19
+CONSTANT             : 21
+EQ                   : 13
+FALSE                : 25
+FORALL               : 10
+GT                   : 16
+GTE                  : 17
+IDENTIFIER           : 8 9 12 22
+IFF                  : 3
+IMPLIES              : 4
+LBRACKET             : 2 10 11 12
+LT                   : 14
+LTE                  : 15
+NEQ                  : 18
+NOT                  : 7
+OR                   : 5
+RBRACKET             : 2 10 11 12
+STRINGLIT            : 23
+THEREEXISTS          : 11
+TRUE                 : 24
+error                : 
+
+Nonterminals, with rules where they appear
+
+atomicFormula        : 1
+formula              : 2 3 3 4 4 5 5 6 6 7 10 11 0
+quantifierList       : 8 10 11
+term                 : 13 13 14 14 15 15 16 16 17 17 18 18 19 20
+termList             : 12 19
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . formula
+    (1) formula -> . atomicFormula
+    (2) formula -> . LBRACKET formula RBRACKET
+    (3) formula -> . formula IFF formula
+    (4) formula -> . formula IMPLIES formula
+    (5) formula -> . formula OR formula
+    (6) formula -> . formula AND formula
+    (7) formula -> . NOT formula
+    (10) formula -> . FORALL quantifierList LBRACKET formula RBRACKET
+    (11) formula -> . THEREEXISTS quantifierList LBRACKET formula RBRACKET
+    (12) atomicFormula -> . IDENTIFIER LBRACKET termList RBRACKET
+    (13) atomicFormula -> . term EQ term
+    (14) atomicFormula -> . term LT term
+    (15) atomicFormula -> . term LTE term
+    (16) atomicFormula -> . term GT term
+    (17) atomicFormula -> . term GTE term
+    (18) atomicFormula -> . term NEQ term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    LBRACKET        shift and go to state 3
+    NOT             shift and go to state 4
+    FORALL          shift and go to state 5
+    THEREEXISTS     shift and go to state 6
+    IDENTIFIER      shift and go to state 7
+    CONSTANT        shift and go to state 9
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    formula                        shift and go to state 1
+    atomicFormula                  shift and go to state 2
+    term                           shift and go to state 8
+
+state 1
+
+    (0) S' -> formula .
+    (3) formula -> formula . IFF formula
+    (4) formula -> formula . IMPLIES formula
+    (5) formula -> formula . OR formula
+    (6) formula -> formula . AND formula
+
+    IFF             shift and go to state 13
+    IMPLIES         shift and go to state 14
+    OR              shift and go to state 15
+    AND             shift and go to state 16
+
+
+state 2
+
+    (1) formula -> atomicFormula .
+
+    IFF             reduce using rule 1 (formula -> atomicFormula .)
+    IMPLIES         reduce using rule 1 (formula -> atomicFormula .)
+    OR              reduce using rule 1 (formula -> atomicFormula .)
+    AND             reduce using rule 1 (formula -> atomicFormula .)
+    $end            reduce using rule 1 (formula -> atomicFormula .)
+    RBRACKET        reduce using rule 1 (formula -> atomicFormula .)
+
+
+state 3
+
+    (2) formula -> LBRACKET . formula RBRACKET
+    (1) formula -> . atomicFormula
+    (2) formula -> . LBRACKET formula RBRACKET
+    (3) formula -> . formula IFF formula
+    (4) formula -> . formula IMPLIES formula
+    (5) formula -> . formula OR formula
+    (6) formula -> . formula AND formula
+    (7) formula -> . NOT formula
+    (10) formula -> . FORALL quantifierList LBRACKET formula RBRACKET
+    (11) formula -> . THEREEXISTS quantifierList LBRACKET formula RBRACKET
+    (12) atomicFormula -> . IDENTIFIER LBRACKET termList RBRACKET
+    (13) atomicFormula -> . term EQ term
+    (14) atomicFormula -> . term LT term
+    (15) atomicFormula -> . term LTE term
+    (16) atomicFormula -> . term GT term
+    (17) atomicFormula -> . term GTE term
+    (18) atomicFormula -> . term NEQ term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    LBRACKET        shift and go to state 3
+    NOT             shift and go to state 4
+    FORALL          shift and go to state 5
+    THEREEXISTS     shift and go to state 6
+    IDENTIFIER      shift and go to state 7
+    CONSTANT        shift and go to state 9
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    formula                        shift and go to state 17
+    atomicFormula                  shift and go to state 2
+    term                           shift and go to state 8
+
+state 4
+
+    (7) formula -> NOT . formula
+    (1) formula -> . atomicFormula
+    (2) formula -> . LBRACKET formula RBRACKET
+    (3) formula -> . formula IFF formula
+    (4) formula -> . formula IMPLIES formula
+    (5) formula -> . formula OR formula
+    (6) formula -> . formula AND formula
+    (7) formula -> . NOT formula
+    (10) formula -> . FORALL quantifierList LBRACKET formula RBRACKET
+    (11) formula -> . THEREEXISTS quantifierList LBRACKET formula RBRACKET
+    (12) atomicFormula -> . IDENTIFIER LBRACKET termList RBRACKET
+    (13) atomicFormula -> . term EQ term
+    (14) atomicFormula -> . term LT term
+    (15) atomicFormula -> . term LTE term
+    (16) atomicFormula -> . term GT term
+    (17) atomicFormula -> . term GTE term
+    (18) atomicFormula -> . term NEQ term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    LBRACKET        shift and go to state 3
+    NOT             shift and go to state 4
+    FORALL          shift and go to state 5
+    THEREEXISTS     shift and go to state 6
+    IDENTIFIER      shift and go to state 7
+    CONSTANT        shift and go to state 9
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    formula                        shift and go to state 18
+    atomicFormula                  shift and go to state 2
+    term                           shift and go to state 8
+
+state 5
+
+    (10) formula -> FORALL . quantifierList LBRACKET formula RBRACKET
+    (8) quantifierList -> . quantifierList COMMA IDENTIFIER
+    (9) quantifierList -> . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 20
+
+    quantifierList                 shift and go to state 19
+
+state 6
+
+    (11) formula -> THEREEXISTS . quantifierList LBRACKET formula RBRACKET
+    (8) quantifierList -> . quantifierList COMMA IDENTIFIER
+    (9) quantifierList -> . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 20
+
+    quantifierList                 shift and go to state 21
+
+state 7
+
+    (12) atomicFormula -> IDENTIFIER . LBRACKET termList RBRACKET
+    (22) term -> IDENTIFIER .
+
+    LBRACKET        shift and go to state 22
+    EQ              reduce using rule 22 (term -> IDENTIFIER .)
+    LT              reduce using rule 22 (term -> IDENTIFIER .)
+    LTE             reduce using rule 22 (term -> IDENTIFIER .)
+    GT              reduce using rule 22 (term -> IDENTIFIER .)
+    GTE             reduce using rule 22 (term -> IDENTIFIER .)
+    NEQ             reduce using rule 22 (term -> IDENTIFIER .)
+
+
+state 8
+
+    (13) atomicFormula -> term . EQ term
+    (14) atomicFormula -> term . LT term
+    (15) atomicFormula -> term . LTE term
+    (16) atomicFormula -> term . GT term
+    (17) atomicFormula -> term . GTE term
+    (18) atomicFormula -> term . NEQ term
+
+    EQ              shift and go to state 23
+    LT              shift and go to state 24
+    LTE             shift and go to state 25
+    GT              shift and go to state 26
+    GTE             shift and go to state 27
+    NEQ             shift and go to state 28
+
+
+state 9
+
+    (21) term -> CONSTANT .
+
+    EQ              reduce using rule 21 (term -> CONSTANT .)
+    LT              reduce using rule 21 (term -> CONSTANT .)
+    LTE             reduce using rule 21 (term -> CONSTANT .)
+    GT              reduce using rule 21 (term -> CONSTANT .)
+    GTE             reduce using rule 21 (term -> CONSTANT .)
+    NEQ             reduce using rule 21 (term -> CONSTANT .)
+    RBRACKET        reduce using rule 21 (term -> CONSTANT .)
+    COMMA           reduce using rule 21 (term -> CONSTANT .)
+    IFF             reduce using rule 21 (term -> CONSTANT .)
+    IMPLIES         reduce using rule 21 (term -> CONSTANT .)
+    OR              reduce using rule 21 (term -> CONSTANT .)
+    AND             reduce using rule 21 (term -> CONSTANT .)
+    $end            reduce using rule 21 (term -> CONSTANT .)
+
+
+state 10
+
+    (23) term -> STRINGLIT .
+
+    EQ              reduce using rule 23 (term -> STRINGLIT .)
+    LT              reduce using rule 23 (term -> STRINGLIT .)
+    LTE             reduce using rule 23 (term -> STRINGLIT .)
+    GT              reduce using rule 23 (term -> STRINGLIT .)
+    GTE             reduce using rule 23 (term -> STRINGLIT .)
+    NEQ             reduce using rule 23 (term -> STRINGLIT .)
+    RBRACKET        reduce using rule 23 (term -> STRINGLIT .)
+    COMMA           reduce using rule 23 (term -> STRINGLIT .)
+    IFF             reduce using rule 23 (term -> STRINGLIT .)
+    IMPLIES         reduce using rule 23 (term -> STRINGLIT .)
+    OR              reduce using rule 23 (term -> STRINGLIT .)
+    AND             reduce using rule 23 (term -> STRINGLIT .)
+    $end            reduce using rule 23 (term -> STRINGLIT .)
+
+
+state 11
+
+    (24) term -> TRUE .
+
+    EQ              reduce using rule 24 (term -> TRUE .)
+    LT              reduce using rule 24 (term -> TRUE .)
+    LTE             reduce using rule 24 (term -> TRUE .)
+    GT              reduce using rule 24 (term -> TRUE .)
+    GTE             reduce using rule 24 (term -> TRUE .)
+    NEQ             reduce using rule 24 (term -> TRUE .)
+    RBRACKET        reduce using rule 24 (term -> TRUE .)
+    COMMA           reduce using rule 24 (term -> TRUE .)
+    IFF             reduce using rule 24 (term -> TRUE .)
+    IMPLIES         reduce using rule 24 (term -> TRUE .)
+    OR              reduce using rule 24 (term -> TRUE .)
+    AND             reduce using rule 24 (term -> TRUE .)
+    $end            reduce using rule 24 (term -> TRUE .)
+
+
+state 12
+
+    (25) term -> FALSE .
+
+    EQ              reduce using rule 25 (term -> FALSE .)
+    LT              reduce using rule 25 (term -> FALSE .)
+    LTE             reduce using rule 25 (term -> FALSE .)
+    GT              reduce using rule 25 (term -> FALSE .)
+    GTE             reduce using rule 25 (term -> FALSE .)
+    NEQ             reduce using rule 25 (term -> FALSE .)
+    RBRACKET        reduce using rule 25 (term -> FALSE .)
+    COMMA           reduce using rule 25 (term -> FALSE .)
+    IFF             reduce using rule 25 (term -> FALSE .)
+    IMPLIES         reduce using rule 25 (term -> FALSE .)
+    OR              reduce using rule 25 (term -> FALSE .)
+    AND             reduce using rule 25 (term -> FALSE .)
+    $end            reduce using rule 25 (term -> FALSE .)
+
+
+state 13
+
+    (3) formula -> formula IFF . formula
+    (1) formula -> . atomicFormula
+    (2) formula -> . LBRACKET formula RBRACKET
+    (3) formula -> . formula IFF formula
+    (4) formula -> . formula IMPLIES formula
+    (5) formula -> . formula OR formula
+    (6) formula -> . formula AND formula
+    (7) formula -> . NOT formula
+    (10) formula -> . FORALL quantifierList LBRACKET formula RBRACKET
+    (11) formula -> . THEREEXISTS quantifierList LBRACKET formula RBRACKET
+    (12) atomicFormula -> . IDENTIFIER LBRACKET termList RBRACKET
+    (13) atomicFormula -> . term EQ term
+    (14) atomicFormula -> . term LT term
+    (15) atomicFormula -> . term LTE term
+    (16) atomicFormula -> . term GT term
+    (17) atomicFormula -> . term GTE term
+    (18) atomicFormula -> . term NEQ term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    LBRACKET        shift and go to state 3
+    NOT             shift and go to state 4
+    FORALL          shift and go to state 5
+    THEREEXISTS     shift and go to state 6
+    IDENTIFIER      shift and go to state 7
+    CONSTANT        shift and go to state 9
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    formula                        shift and go to state 29
+    atomicFormula                  shift and go to state 2
+    term                           shift and go to state 8
+
+state 14
+
+    (4) formula -> formula IMPLIES . formula
+    (1) formula -> . atomicFormula
+    (2) formula -> . LBRACKET formula RBRACKET
+    (3) formula -> . formula IFF formula
+    (4) formula -> . formula IMPLIES formula
+    (5) formula -> . formula OR formula
+    (6) formula -> . formula AND formula
+    (7) formula -> . NOT formula
+    (10) formula -> . FORALL quantifierList LBRACKET formula RBRACKET
+    (11) formula -> . THEREEXISTS quantifierList LBRACKET formula RBRACKET
+    (12) atomicFormula -> . IDENTIFIER LBRACKET termList RBRACKET
+    (13) atomicFormula -> . term EQ term
+    (14) atomicFormula -> . term LT term
+    (15) atomicFormula -> . term LTE term
+    (16) atomicFormula -> . term GT term
+    (17) atomicFormula -> . term GTE term
+    (18) atomicFormula -> . term NEQ term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    LBRACKET        shift and go to state 3
+    NOT             shift and go to state 4
+    FORALL          shift and go to state 5
+    THEREEXISTS     shift and go to state 6
+    IDENTIFIER      shift and go to state 7
+    CONSTANT        shift and go to state 9
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    formula                        shift and go to state 30
+    atomicFormula                  shift and go to state 2
+    term                           shift and go to state 8
+
+state 15
+
+    (5) formula -> formula OR . formula
+    (1) formula -> . atomicFormula
+    (2) formula -> . LBRACKET formula RBRACKET
+    (3) formula -> . formula IFF formula
+    (4) formula -> . formula IMPLIES formula
+    (5) formula -> . formula OR formula
+    (6) formula -> . formula AND formula
+    (7) formula -> . NOT formula
+    (10) formula -> . FORALL quantifierList LBRACKET formula RBRACKET
+    (11) formula -> . THEREEXISTS quantifierList LBRACKET formula RBRACKET
+    (12) atomicFormula -> . IDENTIFIER LBRACKET termList RBRACKET
+    (13) atomicFormula -> . term EQ term
+    (14) atomicFormula -> . term LT term
+    (15) atomicFormula -> . term LTE term
+    (16) atomicFormula -> . term GT term
+    (17) atomicFormula -> . term GTE term
+    (18) atomicFormula -> . term NEQ term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    LBRACKET        shift and go to state 3
+    NOT             shift and go to state 4
+    FORALL          shift and go to state 5
+    THEREEXISTS     shift and go to state 6
+    IDENTIFIER      shift and go to state 7
+    CONSTANT        shift and go to state 9
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    formula                        shift and go to state 31
+    atomicFormula                  shift and go to state 2
+    term                           shift and go to state 8
+
+state 16
+
+    (6) formula -> formula AND . formula
+    (1) formula -> . atomicFormula
+    (2) formula -> . LBRACKET formula RBRACKET
+    (3) formula -> . formula IFF formula
+    (4) formula -> . formula IMPLIES formula
+    (5) formula -> . formula OR formula
+    (6) formula -> . formula AND formula
+    (7) formula -> . NOT formula
+    (10) formula -> . FORALL quantifierList LBRACKET formula RBRACKET
+    (11) formula -> . THEREEXISTS quantifierList LBRACKET formula RBRACKET
+    (12) atomicFormula -> . IDENTIFIER LBRACKET termList RBRACKET
+    (13) atomicFormula -> . term EQ term
+    (14) atomicFormula -> . term LT term
+    (15) atomicFormula -> . term LTE term
+    (16) atomicFormula -> . term GT term
+    (17) atomicFormula -> . term GTE term
+    (18) atomicFormula -> . term NEQ term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    LBRACKET        shift and go to state 3
+    NOT             shift and go to state 4
+    FORALL          shift and go to state 5
+    THEREEXISTS     shift and go to state 6
+    IDENTIFIER      shift and go to state 7
+    CONSTANT        shift and go to state 9
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    formula                        shift and go to state 32
+    atomicFormula                  shift and go to state 2
+    term                           shift and go to state 8
+
+state 17
+
+    (2) formula -> LBRACKET formula . RBRACKET
+    (3) formula -> formula . IFF formula
+    (4) formula -> formula . IMPLIES formula
+    (5) formula -> formula . OR formula
+    (6) formula -> formula . AND formula
+
+    RBRACKET        shift and go to state 33
+    IFF             shift and go to state 13
+    IMPLIES         shift and go to state 14
+    OR              shift and go to state 15
+    AND             shift and go to state 16
+
+
+state 18
+
+    (7) formula -> NOT formula .
+    (3) formula -> formula . IFF formula
+    (4) formula -> formula . IMPLIES formula
+    (5) formula -> formula . OR formula
+    (6) formula -> formula . AND formula
+
+    IFF             reduce using rule 7 (formula -> NOT formula .)
+    IMPLIES         reduce using rule 7 (formula -> NOT formula .)
+    OR              reduce using rule 7 (formula -> NOT formula .)
+    AND             reduce using rule 7 (formula -> NOT formula .)
+    $end            reduce using rule 7 (formula -> NOT formula .)
+    RBRACKET        reduce using rule 7 (formula -> NOT formula .)
+
+  ! IFF             [ shift and go to state 13 ]
+  ! IMPLIES         [ shift and go to state 14 ]
+  ! OR              [ shift and go to state 15 ]
+  ! AND             [ shift and go to state 16 ]
+
+
+state 19
+
+    (10) formula -> FORALL quantifierList . LBRACKET formula RBRACKET
+    (8) quantifierList -> quantifierList . COMMA IDENTIFIER
+
+    LBRACKET        shift and go to state 34
+    COMMA           shift and go to state 35
+
+
+state 20
+
+    (9) quantifierList -> IDENTIFIER .
+
+    LBRACKET        reduce using rule 9 (quantifierList -> IDENTIFIER .)
+    COMMA           reduce using rule 9 (quantifierList -> IDENTIFIER .)
+
+
+state 21
+
+    (11) formula -> THEREEXISTS quantifierList . LBRACKET formula RBRACKET
+    (8) quantifierList -> quantifierList . COMMA IDENTIFIER
+
+    LBRACKET        shift and go to state 36
+    COMMA           shift and go to state 35
+
+
+state 22
+
+    (12) atomicFormula -> IDENTIFIER LBRACKET . termList RBRACKET
+    (19) termList -> . termList COMMA term
+    (20) termList -> . term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    CONSTANT        shift and go to state 9
+    IDENTIFIER      shift and go to state 37
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    termList                       shift and go to state 38
+    term                           shift and go to state 39
+
+state 23
+
+    (13) atomicFormula -> term EQ . term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    CONSTANT        shift and go to state 9
+    IDENTIFIER      shift and go to state 37
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    term                           shift and go to state 40
+
+state 24
+
+    (14) atomicFormula -> term LT . term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    CONSTANT        shift and go to state 9
+    IDENTIFIER      shift and go to state 37
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    term                           shift and go to state 41
+
+state 25
+
+    (15) atomicFormula -> term LTE . term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    CONSTANT        shift and go to state 9
+    IDENTIFIER      shift and go to state 37
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    term                           shift and go to state 42
+
+state 26
+
+    (16) atomicFormula -> term GT . term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    CONSTANT        shift and go to state 9
+    IDENTIFIER      shift and go to state 37
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    term                           shift and go to state 43
+
+state 27
+
+    (17) atomicFormula -> term GTE . term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    CONSTANT        shift and go to state 9
+    IDENTIFIER      shift and go to state 37
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    term                           shift and go to state 44
+
+state 28
+
+    (18) atomicFormula -> term NEQ . term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    CONSTANT        shift and go to state 9
+    IDENTIFIER      shift and go to state 37
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    term                           shift and go to state 45
+
+state 29
+
+    (3) formula -> formula IFF formula .
+    (3) formula -> formula . IFF formula
+    (4) formula -> formula . IMPLIES formula
+    (5) formula -> formula . OR formula
+    (6) formula -> formula . AND formula
+
+    IFF             reduce using rule 3 (formula -> formula IFF formula .)
+    $end            reduce using rule 3 (formula -> formula IFF formula .)
+    RBRACKET        reduce using rule 3 (formula -> formula IFF formula .)
+    IMPLIES         shift and go to state 14
+    OR              shift and go to state 15
+    AND             shift and go to state 16
+
+  ! IMPLIES         [ reduce using rule 3 (formula -> formula IFF formula .) ]
+  ! OR              [ reduce using rule 3 (formula -> formula IFF formula .) ]
+  ! AND             [ reduce using rule 3 (formula -> formula IFF formula .) ]
+  ! IFF             [ shift and go to state 13 ]
+
+
+state 30
+
+    (4) formula -> formula IMPLIES formula .
+    (3) formula -> formula . IFF formula
+    (4) formula -> formula . IMPLIES formula
+    (5) formula -> formula . OR formula
+    (6) formula -> formula . AND formula
+
+    IFF             reduce using rule 4 (formula -> formula IMPLIES formula .)
+    IMPLIES         reduce using rule 4 (formula -> formula IMPLIES formula .)
+    $end            reduce using rule 4 (formula -> formula IMPLIES formula .)
+    RBRACKET        reduce using rule 4 (formula -> formula IMPLIES formula .)
+    OR              shift and go to state 15
+    AND             shift and go to state 16
+
+  ! OR              [ reduce using rule 4 (formula -> formula IMPLIES formula .) ]
+  ! AND             [ reduce using rule 4 (formula -> formula IMPLIES formula .) ]
+  ! IFF             [ shift and go to state 13 ]
+  ! IMPLIES         [ shift and go to state 14 ]
+
+
+state 31
+
+    (5) formula -> formula OR formula .
+    (3) formula -> formula . IFF formula
+    (4) formula -> formula . IMPLIES formula
+    (5) formula -> formula . OR formula
+    (6) formula -> formula . AND formula
+
+    IFF             reduce using rule 5 (formula -> formula OR formula .)
+    IMPLIES         reduce using rule 5 (formula -> formula OR formula .)
+    OR              reduce using rule 5 (formula -> formula OR formula .)
+    $end            reduce using rule 5 (formula -> formula OR formula .)
+    RBRACKET        reduce using rule 5 (formula -> formula OR formula .)
+    AND             shift and go to state 16
+
+  ! AND             [ reduce using rule 5 (formula -> formula OR formula .) ]
+  ! IFF             [ shift and go to state 13 ]
+  ! IMPLIES         [ shift and go to state 14 ]
+  ! OR              [ shift and go to state 15 ]
+
+
+state 32
+
+    (6) formula -> formula AND formula .
+    (3) formula -> formula . IFF formula
+    (4) formula -> formula . IMPLIES formula
+    (5) formula -> formula . OR formula
+    (6) formula -> formula . AND formula
+
+    IFF             reduce using rule 6 (formula -> formula AND formula .)
+    IMPLIES         reduce using rule 6 (formula -> formula AND formula .)
+    OR              reduce using rule 6 (formula -> formula AND formula .)
+    AND             reduce using rule 6 (formula -> formula AND formula .)
+    $end            reduce using rule 6 (formula -> formula AND formula .)
+    RBRACKET        reduce using rule 6 (formula -> formula AND formula .)
+
+  ! IFF             [ shift and go to state 13 ]
+  ! IMPLIES         [ shift and go to state 14 ]
+  ! OR              [ shift and go to state 15 ]
+  ! AND             [ shift and go to state 16 ]
+
+
+state 33
+
+    (2) formula -> LBRACKET formula RBRACKET .
+
+    IFF             reduce using rule 2 (formula -> LBRACKET formula RBRACKET .)
+    IMPLIES         reduce using rule 2 (formula -> LBRACKET formula RBRACKET .)
+    OR              reduce using rule 2 (formula -> LBRACKET formula RBRACKET .)
+    AND             reduce using rule 2 (formula -> LBRACKET formula RBRACKET .)
+    $end            reduce using rule 2 (formula -> LBRACKET formula RBRACKET .)
+    RBRACKET        reduce using rule 2 (formula -> LBRACKET formula RBRACKET .)
+
+
+state 34
+
+    (10) formula -> FORALL quantifierList LBRACKET . formula RBRACKET
+    (1) formula -> . atomicFormula
+    (2) formula -> . LBRACKET formula RBRACKET
+    (3) formula -> . formula IFF formula
+    (4) formula -> . formula IMPLIES formula
+    (5) formula -> . formula OR formula
+    (6) formula -> . formula AND formula
+    (7) formula -> . NOT formula
+    (10) formula -> . FORALL quantifierList LBRACKET formula RBRACKET
+    (11) formula -> . THEREEXISTS quantifierList LBRACKET formula RBRACKET
+    (12) atomicFormula -> . IDENTIFIER LBRACKET termList RBRACKET
+    (13) atomicFormula -> . term EQ term
+    (14) atomicFormula -> . term LT term
+    (15) atomicFormula -> . term LTE term
+    (16) atomicFormula -> . term GT term
+    (17) atomicFormula -> . term GTE term
+    (18) atomicFormula -> . term NEQ term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    LBRACKET        shift and go to state 3
+    NOT             shift and go to state 4
+    FORALL          shift and go to state 5
+    THEREEXISTS     shift and go to state 6
+    IDENTIFIER      shift and go to state 7
+    CONSTANT        shift and go to state 9
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    formula                        shift and go to state 46
+    atomicFormula                  shift and go to state 2
+    term                           shift and go to state 8
+
+state 35
+
+    (8) quantifierList -> quantifierList COMMA . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 47
+
+
+state 36
+
+    (11) formula -> THEREEXISTS quantifierList LBRACKET . formula RBRACKET
+    (1) formula -> . atomicFormula
+    (2) formula -> . LBRACKET formula RBRACKET
+    (3) formula -> . formula IFF formula
+    (4) formula -> . formula IMPLIES formula
+    (5) formula -> . formula OR formula
+    (6) formula -> . formula AND formula
+    (7) formula -> . NOT formula
+    (10) formula -> . FORALL quantifierList LBRACKET formula RBRACKET
+    (11) formula -> . THEREEXISTS quantifierList LBRACKET formula RBRACKET
+    (12) atomicFormula -> . IDENTIFIER LBRACKET termList RBRACKET
+    (13) atomicFormula -> . term EQ term
+    (14) atomicFormula -> . term LT term
+    (15) atomicFormula -> . term LTE term
+    (16) atomicFormula -> . term GT term
+    (17) atomicFormula -> . term GTE term
+    (18) atomicFormula -> . term NEQ term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    LBRACKET        shift and go to state 3
+    NOT             shift and go to state 4
+    FORALL          shift and go to state 5
+    THEREEXISTS     shift and go to state 6
+    IDENTIFIER      shift and go to state 7
+    CONSTANT        shift and go to state 9
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    formula                        shift and go to state 48
+    atomicFormula                  shift and go to state 2
+    term                           shift and go to state 8
+
+state 37
+
+    (22) term -> IDENTIFIER .
+
+    RBRACKET        reduce using rule 22 (term -> IDENTIFIER .)
+    COMMA           reduce using rule 22 (term -> IDENTIFIER .)
+    IFF             reduce using rule 22 (term -> IDENTIFIER .)
+    IMPLIES         reduce using rule 22 (term -> IDENTIFIER .)
+    OR              reduce using rule 22 (term -> IDENTIFIER .)
+    AND             reduce using rule 22 (term -> IDENTIFIER .)
+    $end            reduce using rule 22 (term -> IDENTIFIER .)
+
+
+state 38
+
+    (12) atomicFormula -> IDENTIFIER LBRACKET termList . RBRACKET
+    (19) termList -> termList . COMMA term
+
+    RBRACKET        shift and go to state 49
+    COMMA           shift and go to state 50
+
+
+state 39
+
+    (20) termList -> term .
+
+    RBRACKET        reduce using rule 20 (termList -> term .)
+    COMMA           reduce using rule 20 (termList -> term .)
+
+
+state 40
+
+    (13) atomicFormula -> term EQ term .
+
+    IFF             reduce using rule 13 (atomicFormula -> term EQ term .)
+    IMPLIES         reduce using rule 13 (atomicFormula -> term EQ term .)
+    OR              reduce using rule 13 (atomicFormula -> term EQ term .)
+    AND             reduce using rule 13 (atomicFormula -> term EQ term .)
+    $end            reduce using rule 13 (atomicFormula -> term EQ term .)
+    RBRACKET        reduce using rule 13 (atomicFormula -> term EQ term .)
+
+
+state 41
+
+    (14) atomicFormula -> term LT term .
+
+    IFF             reduce using rule 14 (atomicFormula -> term LT term .)
+    IMPLIES         reduce using rule 14 (atomicFormula -> term LT term .)
+    OR              reduce using rule 14 (atomicFormula -> term LT term .)
+    AND             reduce using rule 14 (atomicFormula -> term LT term .)
+    $end            reduce using rule 14 (atomicFormula -> term LT term .)
+    RBRACKET        reduce using rule 14 (atomicFormula -> term LT term .)
+
+
+state 42
+
+    (15) atomicFormula -> term LTE term .
+
+    IFF             reduce using rule 15 (atomicFormula -> term LTE term .)
+    IMPLIES         reduce using rule 15 (atomicFormula -> term LTE term .)
+    OR              reduce using rule 15 (atomicFormula -> term LTE term .)
+    AND             reduce using rule 15 (atomicFormula -> term LTE term .)
+    $end            reduce using rule 15 (atomicFormula -> term LTE term .)
+    RBRACKET        reduce using rule 15 (atomicFormula -> term LTE term .)
+
+
+state 43
+
+    (16) atomicFormula -> term GT term .
+
+    IFF             reduce using rule 16 (atomicFormula -> term GT term .)
+    IMPLIES         reduce using rule 16 (atomicFormula -> term GT term .)
+    OR              reduce using rule 16 (atomicFormula -> term GT term .)
+    AND             reduce using rule 16 (atomicFormula -> term GT term .)
+    $end            reduce using rule 16 (atomicFormula -> term GT term .)
+    RBRACKET        reduce using rule 16 (atomicFormula -> term GT term .)
+
+
+state 44
+
+    (17) atomicFormula -> term GTE term .
+
+    IFF             reduce using rule 17 (atomicFormula -> term GTE term .)
+    IMPLIES         reduce using rule 17 (atomicFormula -> term GTE term .)
+    OR              reduce using rule 17 (atomicFormula -> term GTE term .)
+    AND             reduce using rule 17 (atomicFormula -> term GTE term .)
+    $end            reduce using rule 17 (atomicFormula -> term GTE term .)
+    RBRACKET        reduce using rule 17 (atomicFormula -> term GTE term .)
+
+
+state 45
+
+    (18) atomicFormula -> term NEQ term .
+
+    IFF             reduce using rule 18 (atomicFormula -> term NEQ term .)
+    IMPLIES         reduce using rule 18 (atomicFormula -> term NEQ term .)
+    OR              reduce using rule 18 (atomicFormula -> term NEQ term .)
+    AND             reduce using rule 18 (atomicFormula -> term NEQ term .)
+    $end            reduce using rule 18 (atomicFormula -> term NEQ term .)
+    RBRACKET        reduce using rule 18 (atomicFormula -> term NEQ term .)
+
+
+state 46
+
+    (10) formula -> FORALL quantifierList LBRACKET formula . RBRACKET
+    (3) formula -> formula . IFF formula
+    (4) formula -> formula . IMPLIES formula
+    (5) formula -> formula . OR formula
+    (6) formula -> formula . AND formula
+
+    RBRACKET        shift and go to state 51
+    IFF             shift and go to state 13
+    IMPLIES         shift and go to state 14
+    OR              shift and go to state 15
+    AND             shift and go to state 16
+
+
+state 47
+
+    (8) quantifierList -> quantifierList COMMA IDENTIFIER .
+
+    LBRACKET        reduce using rule 8 (quantifierList -> quantifierList COMMA IDENTIFIER .)
+    COMMA           reduce using rule 8 (quantifierList -> quantifierList COMMA IDENTIFIER .)
+
+
+state 48
+
+    (11) formula -> THEREEXISTS quantifierList LBRACKET formula . RBRACKET
+    (3) formula -> formula . IFF formula
+    (4) formula -> formula . IMPLIES formula
+    (5) formula -> formula . OR formula
+    (6) formula -> formula . AND formula
+
+    RBRACKET        shift and go to state 52
+    IFF             shift and go to state 13
+    IMPLIES         shift and go to state 14
+    OR              shift and go to state 15
+    AND             shift and go to state 16
+
+
+state 49
+
+    (12) atomicFormula -> IDENTIFIER LBRACKET termList RBRACKET .
+
+    IFF             reduce using rule 12 (atomicFormula -> IDENTIFIER LBRACKET termList RBRACKET .)
+    IMPLIES         reduce using rule 12 (atomicFormula -> IDENTIFIER LBRACKET termList RBRACKET .)
+    OR              reduce using rule 12 (atomicFormula -> IDENTIFIER LBRACKET termList RBRACKET .)
+    AND             reduce using rule 12 (atomicFormula -> IDENTIFIER LBRACKET termList RBRACKET .)
+    $end            reduce using rule 12 (atomicFormula -> IDENTIFIER LBRACKET termList RBRACKET .)
+    RBRACKET        reduce using rule 12 (atomicFormula -> IDENTIFIER LBRACKET termList RBRACKET .)
+
+
+state 50
+
+    (19) termList -> termList COMMA . term
+    (21) term -> . CONSTANT
+    (22) term -> . IDENTIFIER
+    (23) term -> . STRINGLIT
+    (24) term -> . TRUE
+    (25) term -> . FALSE
+
+    CONSTANT        shift and go to state 9
+    IDENTIFIER      shift and go to state 37
+    STRINGLIT       shift and go to state 10
+    TRUE            shift and go to state 11
+    FALSE           shift and go to state 12
+
+    term                           shift and go to state 53
+
+state 51
+
+    (10) formula -> FORALL quantifierList LBRACKET formula RBRACKET .
+
+    IFF             reduce using rule 10 (formula -> FORALL quantifierList LBRACKET formula RBRACKET .)
+    IMPLIES         reduce using rule 10 (formula -> FORALL quantifierList LBRACKET formula RBRACKET .)
+    OR              reduce using rule 10 (formula -> FORALL quantifierList LBRACKET formula RBRACKET .)
+    AND             reduce using rule 10 (formula -> FORALL quantifierList LBRACKET formula RBRACKET .)
+    $end            reduce using rule 10 (formula -> FORALL quantifierList LBRACKET formula RBRACKET .)
+    RBRACKET        reduce using rule 10 (formula -> FORALL quantifierList LBRACKET formula RBRACKET .)
+
+
+state 52
+
+    (11) formula -> THEREEXISTS quantifierList LBRACKET formula RBRACKET .
+
+    IFF             reduce using rule 11 (formula -> THEREEXISTS quantifierList LBRACKET formula RBRACKET .)
+    IMPLIES         reduce using rule 11 (formula -> THEREEXISTS quantifierList LBRACKET formula RBRACKET .)
+    OR              reduce using rule 11 (formula -> THEREEXISTS quantifierList LBRACKET formula RBRACKET .)
+    AND             reduce using rule 11 (formula -> THEREEXISTS quantifierList LBRACKET formula RBRACKET .)
+    $end            reduce using rule 11 (formula -> THEREEXISTS quantifierList LBRACKET formula RBRACKET .)
+    RBRACKET        reduce using rule 11 (formula -> THEREEXISTS quantifierList LBRACKET formula RBRACKET .)
+
+
+state 53
+
+    (19) termList -> termList COMMA term .
+
+    RBRACKET        reduce using rule 19 (termList -> termList COMMA term .)
+    COMMA           reduce using rule 19 (termList -> termList COMMA term .)
+

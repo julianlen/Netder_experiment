@@ -14,3 +14,6 @@ class Distinct(Atom):
 
 	def get_mapping(self, atom):
 		return {}
+
+	def __str__(self):
+		return self._terms[0].getId() + '≠' + self._terms[0].getId()

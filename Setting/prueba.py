@@ -132,7 +132,8 @@ def test1():
 	#atoms es una lista de listas, cada posicion corresponde a un conjunto de atomos relativos 
 	#a un tiempo determinado en orden creciente (de alguna manera definen un bloque de procesamiento)
 	atoms = [atoms1, atoms2]
-	kb = NetDERKB(ont_data = [], net_db = NetDB(graph, facts), netder_tgds = tgds1, netder_egds = egds, netdiff_lrules = local_rules, netdiff_grules = global_rules)
+	config_db_path = os.path.dirname(os.path.realpath(__file__)) +  '/' + "config_db.json"
+	kb = NetDERKB(ont_data = ([], config_db_path), net_db = NetDB(graph, facts), netder_tgds = tgds1, netder_egds = egds, netdiff_lrules = local_rules, netdiff_grules = global_rules)
 
 	chase = NetDERChase(kb, tmax)
 
@@ -141,7 +142,7 @@ def test1():
 	iteracion = 0
 	for a in atoms:
 		print('Current Time', iteracion)
-		kb.add_ont_knowledge(a)
+		kb.add_ont_data(a)
 		answers = chase.answer_query(query1, 1)
 		print("NetDER Query")
 		print(query1)
@@ -254,8 +255,8 @@ def test2():
 
 inicio = datetime.now()
 
-#test1()
-test2()
+test1()
+#test2()
 
 fin = datetime.now()
 
