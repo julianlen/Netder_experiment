@@ -1,26 +1,22 @@
 from Ontological.Variable import Variable
 import copy
+import hashlib
 
 class Atom:
-
 	def __init__(self, id, terms):
 		self._id = id
 		self._terms = terms
+		#variable que es utilizada para asociar a la clave primaria (basada en el hash del atomo)
+		key = 'PK' + str(hash(self))
+		#reemplazo "-" por "_" para evitar problemas cuando se traduce a SQL
+		key = key.replace("-","_")
+		self._pk_variable = Variable(key)
 
 	def getId(self):
 		return self._id
 
 	def get_terms(self):
 		return self._terms
-
-	def get_variables(self):
-		result = {}
-		for term in self._terms:
-			if isinstance(term, Variable):
-				result[term.getId()] = copy.deepcopy(term)
-		result = result.values()
-
-		return result
 
 	def is_mapped(self, atom):
 		result = False
@@ -55,8 +51,11 @@ class Atom:
 					success = False
 		return success
 
+	#todos los atomos comienzan con Atom.PK como primer termino porque esta columna se usa como la clave primaria
+	#este valor se obtiene de aplicar hash al tomo, pero es algo interno a la implementacion de la BD
+	#por esta razon no se considera un termino en si del atomo
 	def __str__(self):
-		result = self._id + '('
+		result = self._id + '(' + str(self.get_pk_variable().getId()) + ','
 		for term in self._terms:
 			result = result + str(term.getId()) + ','
 
@@ -79,11 +78,12 @@ class Atom:
 		return result
 
 	def __hash__(self):
-		string = str(self._id)
+		string = str(self._id) + ','
 		for term in self._terms:
-			string = string + str(term)
+			string = string + str(hash(term)) + ','
 
-		return hash(string)
+		string = string.encode('utf-8')
+		return int(hashlib.sha1(string).hexdigest(), 16)
 
 	def is_equivalent(self, atom):
 		result = True
@@ -100,3 +100,27 @@ class Atom:
 
 
 		return result
+
+	def get_pk_variable(self):
+		return copy.deepcopy(self._pk_variable)
+
+	#devueve los terminos que son variables
+	def get_variables(self):
+		result = []
+		aux = set()
+		for term in self._terms:
+			if isinstance(term, Variable) and not (term in aux):
+				variable = copy.deepcopy(term)
+				result.append(variable)
+				aux.add(variable)
+		return result
+
+
+	def is_present(self, term):
+		result = False
+		for my_term in self._terms:
+			if my_term.getId() == term.getId():
+				result = True
+				break
+		return result
+

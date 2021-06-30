@@ -11,6 +11,9 @@ class NetDERRule(ABC):
 	def get_id(self):
 		return self._id
 
+	def set_id(self, id_rule):
+		self._id = id_rule
+
 	def get_ont_body(self):
 		return self._ont_body
 

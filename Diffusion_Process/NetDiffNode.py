@@ -1,18 +1,20 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from Diffusion_Process.NetDiffGraphElement import NetDiffGraphElement
+from Ontological.Constant import Constant
 
 class NetDiffNode(NetDiffGraphElement):
+	ID = "node"
 
 	def __init__(self, id):
-		self._id = id
+		super().__init__("node", [Constant(str(id))])
 		self._color = "blue"
 
 	def get_labels():
 		return NetDiffNode._labels
 
-	def __str__(self):
-		return 'node(' + self._id + ')'
+	def __hash__(self):
+		return super().__hash__()
 
 	def to_json_string(self):
 		#if random.randint(1, 50) == 1:
@@ -26,14 +28,11 @@ class NetDiffNode(NetDiffGraphElement):
 	def get_color(self):
 		return self._color
 
-	def getId(self):
-		return self._id
 
 	def __eq__(self, node):
 		result = False
 		if isinstance(self, type(node)):
 			result = self is node
-
-			result = result or (self._id == node.getId())
+			result = result or (hash(self) == hash(node))
 
 		return result

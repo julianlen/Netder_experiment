@@ -17,7 +17,6 @@ from Diffusion_Process.NetDiffGlobalRule import NetDiffGlobalRule
 from Diffusion_Process.Average import Average
 from Diffusion_Process.EnhancedTipping import EnhancedTipping
 from Ontological.NetDERKB import NetDERKB
-from Ontological.NetDB import NetDB
 from Ontological.NetDERChase import NetDERChase
 from Ontological.NetDERQuery import NetDERQuery
 from Ontological.NetDERTGD import NetDERTGD
@@ -25,9 +24,14 @@ from Ontological.NetDEREGD import NetDEREGD
 from Ontological.Atom import Atom
 from Ontological.GRE import GRE
 from Ontological.Distinct import Distinct
+from Ontological.Equal import Equal
 from Ontological.Variable import Variable
 from Ontological.Constant import Constant
 from Ontological.Homomorphism import Homomorphism
+from Ontological.NetCompTarget import NetCompTarget
+
+
+config_db_path = os.path.dirname(os.path.realpath(__file__)) +  '/' + "config_db.json"
 
 def test1():
 	nodes = [NetDiffNode('0'), NetDiffNode('1'), NetDiffNode('2'), NetDiffNode('3')]
@@ -47,7 +51,7 @@ def test1():
 
 	local_rules = []
 	for nlabel in category_nlabels:
-		local_rules.append(NetDiffLocalRule(nlabel, [], 1, [(nlabel, portion.closed(1, 1))], [], EnhancedTipping(0.5, portion.closed(1, 1))))
+		local_rules.append(NetDiffLocalRule(nlabel, [], 1, [(nlabel, portion.closed(0, 1))], [], EnhancedTipping(0.5, portion.closed(1, 1))))
 
 	global_rules = []
 	index = 0
@@ -57,7 +61,7 @@ def test1():
 
 
 	#atom4, atom5, atom6, atom7, atom8, atom9, atom10, atom11, atom12, ont_head1, ont_head2, ont_head3, ont_head5, ont_head9
-	atom4 = Atom('earlyPoster', [Variable('UID'), Variable('FN')])
+	atom4 = Atom('early_poster', [Variable('UID'), Variable('FN')])
 	atom5 = Atom('hyp_is_resp', [Variable('UID'), Variable('FN1')])
 	atom6 = Atom('hyp_is_resp', [Variable('UID'), Variable('FN2')])
 	atom7 = Distinct(Variable('FN1'), Variable('FN2'))
@@ -66,6 +70,9 @@ def test1():
 	atom10 = Atom('hyp_malicious', [Variable('UID2')])
 	atom11 = Atom('closer', [Variable('UID1'), Variable('UID2')])
 	atom12 = Atom('pre_hyp_fakenews2', [Variable('FN')])
+	atom13 = Atom('node', [Variable('N')])
+	atom14 = Equal(Variable('N'), Constant('0'))
+	nct2 = NetCompTarget(Atom('node', [Variable('X')]), 'A', portion.closed(0.5, 1))
 
 
 
@@ -77,7 +84,7 @@ def test1():
 
 	global_conditions = []
 	for glabel in category_glabels:
-		global_conditions.append((glabel, portion.closed(0.1, 1)))
+		global_conditions.append((glabel, portion.closed(0, 1)))
 
 	tgds1 = []
 
@@ -87,14 +94,17 @@ def test1():
 	#externa asignando un valor de confianza que supera cierta umbral definido (\theta_1)
 	tgd_counter = 0
 	for gc in global_conditions:
-		news_category_atom = Atom('news_category', [Variable('FN'), Constant(category_kinds[tgd_counter])])
-		tgds1.append(NetDERTGD(rule_id = tgd_counter, ont_body = [atom8, news_category_atom], ont_head = [ont_head1], global_cond = [gc]))
+		#news_category_atom = Atom('news_category', [Variable('FN'), Constant(category_kinds[tgd_counter])])
+		news_category_atom = Atom('news_category', [Variable('FN'), Variable('Categ')])
+		category_atom = Equal(Variable('Categ'), Constant(category_kinds[tgd_counter]))
+		tgds1.append(NetDERTGD(rule_id = tgd_counter, ont_body = [atom8, news_category_atom, category_atom], ont_head = [ont_head1], global_cond = [gc]))
 		tgd_counter += 1
 
 	#hyp_fakeNews(FN) ^ earlyPoster(UID, FN) ^ user(UID, N) -> hyp_is_resp(UID, FN)
 	#hyp_fakeNews(FN) ^ earlyPoster(UID, FN) -> hyp_is_resp(UID, FN)
 
 	tgd1 = NetDERTGD(rule_id = tgd_counter, ont_body = [ont_head1, atom4], ont_head = [ont_head2])
+	valor = tgd_counter
 	tgd_counter += 1
 
 	#hyp_is_resp(UID, FN1) ^ hyp_is_resp(UID, FN2) ^ (FN1 != FN2) -> hyp_malicious(UID)
@@ -106,7 +116,11 @@ def test1():
 	tgd3 = NetDERTGD(rule_id = 'tgd' + str(tgd_counter), ont_body = [atom9, atom10, atom11], ont_head = ont_head5)
 	tgd_counter += 1
 
+	#pre_hyp_fakenews2(FN) -> hyp_fakenews(FN)
 	tgd4 = NetDERTGD(rule_id = tgd_counter, ont_body = [atom12], ont_head = [ont_head1])
+	tgd_counter += 1
+
+	tgd5 = NetDERTGD(rule_id = tgd_counter, ont_body = [atom13, atom14], net_body= [], ont_head = [], net_head = [nct2])
 	tgd_counter += 1
 
 
@@ -114,33 +128,42 @@ def test1():
 	tgds1.append(tgd2)
 	tgds1.append(tgd3)
 	tgds1.append(tgd4)
+	tgds1.append(tgd5)
 
 	egds = []
 	egd_counter = tgd_counter + 1
 	#hyp_botnet(B1) ^ hyp_botnet(B2) ^ member(UID, B1) ^ member(UID, B2) ->  B1 = B2
 	egd1 = NetDEREGD(rule_id = egd_counter, ont_body = [Atom('member', [Variable('UID'), Variable('B1')]), Atom('member', [Variable('UID'), Variable('B2')])], head = [Variable('B1'), Variable('B2')])
+	
+	egd_counter = tgd_counter + 1
+	#hyp_botnet(B1) ^ hyp_botnet(B2) ->  B1 = B2
+	egd2 = NetDEREGD(rule_id = egd_counter, ont_body = [Atom('hyp_botnet', [Variable('B1')]), Atom('hyp_botnet', [Variable('B2')])], head = [Variable('B1'), Variable('B2')])
+
 
 	egds.append(egd1)
+	egds.append(egd2)
+	
 
 
 	tmax = 2
-	facts = []
+	facts = set()
 	for n in nodes:
-		facts.append(NetDiffFact(n, NLocalLabel('C'), portion.closed(1,1), 0, tmax))
-	atoms1 = [Atom('pre_hyp_fakenews', [Constant('fn1')]), Atom('news_category', [Constant('fn1'), Constant('C')]), Atom('pre_hyp_fakenews', [Constant('fn2')]), Atom('news_category', [Constant('fn2'), Constant('C')]), Atom('earlyPoster', [Constant('1'), Constant('fn1')]), Atom('earlyPoster', [Constant('1'), Constant('fn2')]), Atom('earlyPoster', [Constant('2'), Constant('fn3')]), Atom('earlyPoster', [Constant('2'), Constant('fn4')]), Atom('closer', [Constant('1'), Constant('2')])]
-	atoms2 = [Atom('pre_hyp_fakenews2', [Constant('fn3')]), Atom('pre_hyp_fakenews2', [Constant('fn4')])]
-	#atoms es una lista de listas, cada posicion corresponde a un conjunto de atomos relativos 
-	#a un tiempo determinado en orden creciente (de alguna manera definen un bloque de procesamiento)
-	atoms = [atoms1, atoms2]
-	config_db_path = os.path.dirname(os.path.realpath(__file__)) +  '/' + "config_db.json"
-	kb = NetDERKB(ont_data = ([], config_db_path), net_db = NetDB(graph, facts), netder_tgds = tgds1, netder_egds = egds, netdiff_lrules = local_rules, netdiff_grules = global_rules)
+		facts.add(NetDiffFact(n, NLocalLabel('C'), portion.closed(1,1), 0, tmax))
+	data1 = {Atom('pre_hyp_fakenews', [Constant('fn1')]), Atom('news_category', [Constant('fn1'), Constant('C')]), Atom('pre_hyp_fakenews', [Constant('fn2')]), Atom('news_category', [Constant('fn2'), Constant('C')]), Atom('early_poster', [Constant('1'), Constant('fn1')]), Atom('early_poster', [Constant('1'), Constant('fn2')]), Atom('early_poster', [Constant('2'), Constant('fn3')]), Atom('early_poster', [Constant('2'), Constant('fn4')]), Atom('closer', [Constant('1'), Constant('2')])}
+	data1 = data1.union(facts)
+	data2 = {Atom('pre_hyp_fakenews2', [Constant('fn3')]), Atom('pre_hyp_fakenews2', [Constant('fn4')]), Atom('pre_hyp_fakenews2', [Constant('fn5')]), Atom('pre_hyp_fakenews2', [Constant('fn6')]), Atom('pre_hyp_fakenews2', [Constant('fn7')]), Atom('pre_hyp_fakenews2', [Constant('fn8')]), Atom('early_poster', [Constant('3'), Constant('fn5')]), Atom('early_poster', [Constant('3'), Constant('fn6')]), Atom('early_poster', [Constant('0'), Constant('fn7')]), Atom('early_poster', [Constant('0'), Constant('fn8')]), Atom('closer', [Constant('0'), Constant('3')])}
+	data3 = {Atom('hyp_botnet', [Constant('my_botnet')])}
+	#data es una lista de conjuntos, cada elemento corresponde a un conjunto de datos los cuales pueden ser atomos o net_diff_facts
+	#estos datos corresponden a un tiempo determinado en orden creciente (de alguna manera definen un bloque de procesamiento)
+	data = [data1, data2, data3]
+	kb = NetDERKB(data = set(), net_diff_graph = graph, config_db = config_db_path, netder_tgds = tgds1, netder_egds = egds, netdiff_lrules = local_rules, netdiff_grules = global_rules)
 
 	chase = NetDERChase(kb, tmax)
-
+	
 	query1 = NetDERQuery(exist_var = [Variable('Botnet')], ont_cond = [Atom('hyp_fakenews', [Variable('HFN')]), Atom('hyp_is_resp', [Variable('HResp'), Variable('FN')]), Atom('hyp_malicious', [Variable('Mal')]), Atom('member', [Variable('UID1'), Variable('Botnet')])], time = (tmax, tmax))
 
 	iteracion = 0
-	for a in atoms:
+	for a in data:
 		print('Current Time', iteracion)
 		kb.add_ont_data(a)
 		answers = chase.answer_query(query1, 1)
@@ -152,14 +175,15 @@ def test1():
 				print("Variable", key, "instanciada con valor", ans[key].getValue())
 		iteracion += 1
 
+
 body_symbol = 'news'
 def get_random_news_atoms(cant):
-	atoms = []
+	atoms = set()
 	for index in range(cant):
 		value1 = ''.join(random.choices(string.ascii_letters, k=10))
 		value2 = random.random()
 		atom = Atom('news', [Constant(value1), Constant(value2)])
-		atoms.append(atom)
+		atoms.add(atom)
 	return atoms
 #news(FN, fake_level)
 
@@ -190,8 +214,8 @@ def get_netDiffGraph(cant_nodes, cant_edges):
 			netDiffEdges.append(NetDiffEdge(node_id, neigh_id))
 
 	netDiffGraph = NetDiffGraph('graph', netDiffNodes, netDiffEdges)
-	nlabels = [NLocalLabel('covid19 doesn\'t exist')]
-	gLabels = [GlobalLabel('trending(covid19 doesn\'t exist)')]
+	nlabels = [NLocalLabel("covid19 doesn\\'t exist")]
+	gLabels = [GlobalLabel("trending(covid19 doesn\\'t exist)")]
 	#configura las Node Local Labels que van a estar disponibles
 	netDiffNodes[0].setLabels(nlabels)
 	#configura las Global Labels que van a estar disponibles
@@ -200,11 +224,11 @@ def get_netDiffGraph(cant_nodes, cant_edges):
 	return netDiffGraph
 
 def get_NetDiffFacts(elements, labels, tmax):
-	result = []
+	result = set()
 	for elem in elements:
 		if random.random() < 0.5:
 			label = random.choice(labels)
-			result.append(NetDiffFact(elem, label, portion.closed(1,1), 0, tmax))
+			result.add(NetDiffFact(elem, label, portion.closed(1,1), 0, tmax))
 
 	return result
 
@@ -218,10 +242,10 @@ def test2():
 	netDiffGraph = get_netDiffGraph(cant_nodes = 3000, cant_edges = 3000)
 	fin_graph = datetime.now()
 	print('tiempo creacion grafo', (fin_graph - inicio_graph))
-	netDiffFacts = get_NetDiffFacts(elements= netDiffGraph.getNodes(), labels = netDiffGraph.getNodes()[0].getLabels(), tmax = tmax)
+	netDiffFacts = get_NetDiffFacts(elements= netDiffGraph.getNodes(), labels = next(iter(netDiffGraph.getNodes())).getLabels(), tmax = tmax)
 
 	#selecciono la unica node local label disponible
-	nlabel = netDiffGraph.getNodes()[0].getLabels()[0]
+	nlabel = next(iter(netDiffGraph.getNodes())).getLabels()[0]
 	local_rules = [NetDiffLocalRule(nlabel, [], 1, [(nlabel, portion.closed(1, 1))], [], EnhancedTipping(0.5, portion.closed(1, 1)))]
 
 	#selecciono la unica global label disponible
@@ -230,7 +254,7 @@ def test2():
 	#---------------------------------------------------------------------------
 
 	#"atoms" lo voy a utilizar luego para crear la BD ontologica
-	cantidad_atomos = 1000
+	cantidad_atomos = 2000
 	atoms = get_random_news_atoms(cantidad_atomos)
 	atom1 = Atom('news', [Variable('Content'), Variable('FN_level')])
 	atom2 = GRE(Variable('FN_level'), Constant(0.1))
@@ -240,8 +264,9 @@ def test2():
 	tgd1 = NetDERTGD(rule_id = tgd_counter, ont_body = [atom1, atom2], ont_head = [ont_head1], global_cond = [(glabel, portion.closed(0.3,1))])
 
 
-	kb = NetDERKB(ont_data = atoms, net_db = NetDB(netDiffGraph, netDiffFacts), netder_tgds = [tgd1], netdiff_lrules = local_rules, netdiff_grules = global_rules)
-
+	kb = NetDERKB(data = set(), net_diff_graph = netDiffGraph, config_db = config_db_path, netder_tgds = [tgd1], netdiff_lrules = local_rules, netdiff_grules = global_rules)
+	kb.add_ont_data(atoms)
+	kb.add_ont_data(netDiffFacts)
 	chase = NetDERChase(kb, tmax)
 	#query1(HFN) = hyp_fakenews(HFN):[tmax, tmax], tener en cuenta que en este caso el tiempo no tiene importancia
 	query1 = NetDERQuery(ont_cond = [Atom('hyp_fakenews', [Variable('HFN')])], time = (tmax, tmax))
