@@ -19,6 +19,10 @@ class RDBHomomorphism(Homomorphism):
 	PK = "1_primary_key"
 	def __init__(self, netder_kb):
 		self._netder_kb = netder_kb
+
+
+	def to_SQL(self, query):
+		pass
 	
 	#busca todos los posibles mapeos entre un conjunto de atomos (atoms) y una base de datos asociada a la base de conocimiento netder
 	#historical_included indica si mapeos que ya hayan sido utilizados pueden ser incluidos en la respuesta

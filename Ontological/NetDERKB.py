@@ -276,6 +276,12 @@ class NetDERKB:
 			con.close()
 		
 
+	def get_net_diff_graph(self):
+		'''NetDiffNode.ID
+		NetDiffEdge.ID'''
+
+		return self._net_diff_graph
+
 
 	def get_netder_egds(self):
 		return self._netder_egds
@@ -289,5 +295,3 @@ class NetDERKB:
 	def get_net_diff_grules(self):
 		return self._netdiff_grules
 
-	def get_net_diff_graph(self):
-		return self._net_diff_graph
