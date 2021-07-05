@@ -26,7 +26,7 @@ class VariableNode(Node):
     '''
     candidate_node = symTable.lookup(self.getIdentifier())
     if candidate_node is None:
-      print('Adding global ' + self._identifier)
+      #print('Adding global ' + self._identifier)
       symTable.addGlobal(self._identifier, self)
 
   #sets self.boundValue to variable and returns True on success
@@ -35,9 +35,9 @@ class VariableNode(Node):
     attr_eq = True
     rel_eq = True
     resolved_variable_node = self._symTable.lookup(self.getIdentifier())
-    print('\tVariable is a VariableNode? ' +  str(isinstance(variable,VariableNode)))
-    print('\tResolved_Variable_Node is a VariableNode? ' +  str(isinstance(resolved_variable_node,VariableNode)))
-    print('\t' + str(resolved_variable_node))
+    #print('\tVariable is a VariableNode? ' +  str(isinstance(variable,VariableNode)))
+    #print('\tResolved_Variable_Node is a VariableNode? ' +  str(isinstance(resolved_variable_node,VariableNode)))
+    #print('\t' + str(resolved_variable_node))
 
     if resolved_variable_node.getBoundValue() is None:
       resolved_variable_node.setBoundValue(variable)

@@ -19,7 +19,7 @@ class NetDiffNode(NetDiffGraphElement):
 	def to_json_string(self):
 		#if random.randint(1, 50) == 1:
 			#self._color = "red"
-		return '{"id":"' + str(self._id) + '", "label": "' + str(self._id) + '", "color": "' + self._color + '" }'
+		return '{"id":"' + str(self._id) + '", "name": "' + str(self._terms[0].getValue()) + '", "color": "' + self._color + '" }'
 		#return '{"id":"' + str(self._id) + '" }'
 
 	def set_color(self, color):

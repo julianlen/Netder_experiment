@@ -17,7 +17,7 @@ class NetDiffEdge(NetDiffGraphElement):
 		return super().__hash__()
 	
 	def to_json_string(self):
-		return '{"id":"'+ str(self._id) +'", "from":'+ str(self._source) + ', "to":' + str(self._target) + ', "color": "black" ' + '}'
+		return '{"id":"'+ str(self._id) +'", "from":'+ str(self._terms[0].getValue()) + ', "to":' + str(self._terms[1].getValue()) + ', "color": "black" ' + '}'
 		
 	def getSource(self):
 		return self._terms[0].getValue()

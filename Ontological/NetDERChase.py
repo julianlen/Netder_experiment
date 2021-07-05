@@ -17,14 +17,14 @@ class NetDERChase:
 		self._tmax = tmax
 		self._config_db = config_db
 		self._net_diff_interpretation = NetDiffInterpretation(self._kb.get_net_diff_graph(), self._tmax)
+		self._h = RDBHomomorphism(self._kb)
 		
 
 	#el parametro "id_atoms" se utiliza para diferenciar dos conjuntos de atomos sintacticamente iguales pero que corresponden a reglas diferentes
 	#esto evita que una vez que un mapeo sea utilizado para el cuerpo de una regla luego ya no pueda ser utilizado para otra con un cuerpo sintacticamente igual
 	def _get_atoms_mapping(self, atoms, id_atoms = 0, historical_included = False):
-		h = RDBHomomorphism(self._kb)
 		#se busca mapaer los atomos "atoms" en la base de datos a traves de un homomorfismo h
-		result = h.get_atoms_mapping(atoms, id_atoms, historical_included)
+		result = self._h.get_atoms_mapping(atoms, id_atoms, historical_included)
 		return result
 
 
@@ -115,7 +115,7 @@ class NetDERChase:
 		#se almacena el nuevo conocimiento obtenido por la tgd
 		#el primer elemento de la lista contiene todas la posibles formas de nuevo conocimiento ontologico obtenido de aplicar la tgd
 		#el segunfo elemento de la lista contiene todas la posibles formas de nuevo conocimiento de red obtenido de aplicar la tgd
-		aux_result = [set(), set()]
+		aux_result = [set(), set(), body_mapping]
 		index = 0
 		#cada elemento (ontologico o de red) de la cabeza de la tgd se encuentra mapeado, excepto las variables existenciales
 		#para cada variable existencial se crea un null, a traves de un mapeo que se aplica a toda la cabeza de la tgd
@@ -163,16 +163,18 @@ class NetDERChase:
 		#se verifica si hay algun mapeo
 		if len(body_mapping) > 0:
 			#a continuacion, se verifica que en cada mapeo se cumpla la restriccion de la cabeza (por ejemplo, X = Y)
-			for key_pos in body_mapping.keys():
+			key_list = list(body_mapping.keys())
+			key_index = 0
+			while key_index < len(key_list):
 				new_mapping = {}
 				#para cada mapeo la verificacion se realiza en tres pasos:
 				#paso (1): se realizan dos copias (llamemosla (a) y (b)) del cuerpo de la regla (divididas en parte ontologica y de red)
 				#paso (2.1): se aplica el mapeo tomando como clave la primer parte de la cabeza y como valor la segunda parte de la cabeza
 				#paso (2.2): en la parte ontologica y en la parte de red de la copia (a). Por ejemplo si la cabeza es "X=Y", se aplica el mapeo "{'X': Y}"
-				#paso (3): se aplica el mapeo body_mapping[key_pos] en la parte ontologica y de red de la copia (a)
+				#paso (3): se aplica el mapeo "body_mapping[key_list[key_index]]" en la parte ontologica y de red de la copia (a)
 				#paso (4.1): se aplica el mapeo tomando como clave la segunda parte de la cabeza y como valor la primer parte de la cabeza
 				#paso (4.2): en la parte ontologica y en la parte de red de la copia (b). Por ejemplo si la cabeza es "X=Y", se aplica el mapeo "{'Y': X}"
-				#paso (5): se aplica el mapeo body_mapping[key_pos] en la parte ontologica y de red de la copia (b)
+				#paso (5): se aplica el mapeo "body_mapping[key_list[key_index]]" en la parte ontologica y de red de la copia (b)
 				#paso (6.1): se verifica que las copias (a) y (b), mapeadas segun los pasos anteriores, cumplan que cada par de terminos "equivalentes"
 				#paso (6.2): alguno de los dos terminos de una de las copias es un Null (en ese caso se construye un mapeo para actualizar la BD)
 				#paso (6.3): ambos terminos de las copias son constantes e iguales.
@@ -190,13 +192,13 @@ class NetDERChase:
 					#paso (2) en la parte ontologica
 					atom.map({head[0].getId(): head[1]})
 					#paso (3) en la parte ontologica
-					atom.map(body_mapping[key_pos])
+					atom.map(body_mapping[key_list[key_index]])
 
 				for nct in cloned_net_body1:
 					#paso (2) en la parte de red
 					nct.getComponent().map({head[0].getId(): head[1]})
 					#paso (3) en la parte de red
-					nct.getComponent().map(body_mapping[key_pos])
+					nct.getComponent().map(body_mapping[key_list[key_index]])
 
 				head = copy.deepcopy(egd.get_head())
 
@@ -205,13 +207,13 @@ class NetDERChase:
 					#paso (4) en la parte ontologica
 					atom.map({head[1].getId(): head[0]})
 					#paso (5) en la parte ontologica
-					atom.map(body_mapping[key_pos])
+					atom.map(body_mapping[key_list[key_index]])
 				
 				for nct in cloned_net_body2:
 					#paso (4) en la parte de red
 					nct.getComponent().map({head[1].getId(): head[0]})
 					#paso (5) en la parte de red
-					nct.getComponent().map(body_mapping[key_pos])
+					nct.getComponent().map(body_mapping[key_list[key_index]])
 					
 
 				for index in range(0, len(cloned_ont_body1)):
@@ -272,8 +274,16 @@ class NetDERChase:
 									break
 							term_i = term_i + 1
 				if (success):
-					#si la EGD se safisface para el mapeo body_mapping[key_pos], se actualizan los nulls (en caso de ser necesario)
-					self._kb.update_nulls(new_mapping)
+					#si la EGD se safisface para el mapeo body_mapping[key_list[key_index]], se actualizan los nulls (en caso de ser necesario)
+					success_un = self._kb.update_nulls(new_mapping)
+					self._h.save({key_list[key_index]: body_mapping[key_list[key_index]]})
+					if success_un:
+						#se obtienen nuevamente los mapeos debido que hubo una actualizacion de los datos, se reinicia "body_mapping", "key_list" y "key_index" 
+						body_mapping = self.get_body_mapping(egd, time)
+						key_list = list(body_mapping.keys())
+						key_index = 0
+					else:
+						key_index += 1
 				else:
 					break
 
@@ -294,6 +304,7 @@ class NetDERChase:
 				#"new_knowledge" almacena el nuevo conocimiento obtenido de aplicar TGDs
 				#el primer elemento contiene conocimiento ontologico y el segundo conocimiento de red
 				new_knowledge = [set(), set()]
+				new_mappings = {}
 				index = 0
 				#se realiza un paso de aplicacion por cada TGD disponible
 				for tgd in self._kb.get_netder_tgds():
@@ -303,16 +314,15 @@ class NetDERChase:
 					index += 1
 					new_knowledge[0] = new_knowledge[0].union(TGD_result[0])
 					new_knowledge[1] = new_knowledge[1].union(TGD_result[1])
+					new_mappings.update(TGD_result[2])
 				
 				#se incorpora el nuevo conocimiento ontologico obtenido
 				#la operacion tiene exito si al menos uno de los atomos agregados es "nuevo"
 				success = self._kb.add_ont_data(new_knowledge[0])
 				#se incorpora el nuevo conocimiento de red obtenido
-				#---------------
-				#TENGO QUE ARREGLAR ESTO
-				#self._kb.add_net_knowledge(new_knowledge[1], query.get_time())
-				#-----------------
 				self._kb.add_ont_data(new_knowledge[1])
+				#se almacenan los hash de los mapeos utilizados
+				self._h.save(new_mappings)
 				#se verifican si cada una de las EGDs se satisfacen, si alguna falla, se termina el proceso
 				for egd in self._kb.get_netder_egds():
 					#seguir = self.applyStepEGDChase(egd, query.get_time())
@@ -320,16 +330,12 @@ class NetDERChase:
 					if not success_egds:
 						raise Exception('Una de las EGDs ha sido violada')
 
-				#se reinicia este atributo porque los mapeos deben calcularse de nuevo (podria haber una forma de no reiniciar pero no creo que sea sencilla)
-				self._body_mapping_his = []
 				if seguir:
 					qa_success = True
 					mapping = {}
 					#se buscan todos los mapeos para la consulta
 					for q in query.get_disjoint_queries():
-						#candidates = self._get_candidate_atoms(q)
 						q_mapping = self._get_atoms_mapping(q.get_ont_body(), historical_included = True)
-						
 						mapping.update(q_mapping)
 						
 						if not (len(q_mapping) > 0):

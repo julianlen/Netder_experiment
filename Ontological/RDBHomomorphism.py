@@ -22,7 +22,23 @@ class RDBHomomorphism(Homomorphism):
 
 
 	def to_SQL(self, query):
-		pass
+		result = parser.parse_input(str(query))
+		# Set up a symbol table and code generation visitor
+		
+		symbolTable = SymTable()
+		codegenVisitor = IRGenerator(schema.Schema())
+		sqlGeneratorVisitor = SQLGenerator()
+		# Generate the symbol table
+		
+		result.generateSymbolTable(symbolTable)
+
+		# Perform the code generation into SQLIR using the visitor
+		result.accept(codegenVisitor)
+
+		codegenVisitor._IR_stack[0].accept(sqlGeneratorVisitor)
+
+		return sqlGeneratorVisitor._sql
+	
 	
 	#busca todos los posibles mapeos entre un conjunto de atomos (atoms) y una base de datos asociada a la base de conocimiento netder
 	#historical_included indica si mapeos que ya hayan sido utilizados pueden ser incluidos en la respuesta
@@ -38,32 +54,15 @@ class RDBHomomorphism(Homomorphism):
 				exist_var.append(pk_variable)
 		query = OntQuery(exist_var = exist_var, ont_cond = atoms)
 		
-		result = parser.parse_input(str(query))
+		sql_query = self.to_SQL(query)
+		
+		var_set = query.get_free_variables()
 
-
-		# Set up a symbol table and code generation visitor
-		symbolTable = SymTable()
-
-		codegenVisitor = IRGenerator(schema.Schema())
-		sqlGeneratorVisitor = SQLGenerator()
-
-		# Generate the symbol table
-		#print("Generating symbol table...")
-		result.generateSymbolTable(symbolTable)
-
-
-		# Perform the code generation into SQLIR using the visitor
-		result.accept(codegenVisitor)
-
-		codegenVisitor._IR_stack[0].accept(sqlGeneratorVisitor)
-
-
-	
 		con = self._netder_kb.get_connection()
 		cur = con.cursor()
-		cur.execute(sqlGeneratorVisitor._sql)
+
+		cur.execute(sql_query)
 		data = cur.fetchall()
-		var_set = query.get_free_variables()
 
 		new_mapping = {}
 		for row in data:
@@ -91,8 +90,6 @@ class RDBHomomorphism(Homomorphism):
 			if len(cur.fetchall()) == 0:
 				if not (key_mapping in new_mapping):
 					new_mapping[key_mapping] = mapping
-					mapping_insert = "INSERT INTO " + RDBHomomorphism.NAME + " VALUES (" + str(key_mapping) + ");"
-					cur.execute(mapping_insert)
 			elif historical_included:
 				new_mapping[key_mapping] = mapping
 
@@ -101,4 +98,28 @@ class RDBHomomorphism(Homomorphism):
 
 
 		return new_mapping
+
+	def save(self, mappings):
+		con = self._netder_kb.get_connection()
+		cur = con.cursor()
+		columns = self._netder_kb.get_columns(con, RDBHomomorphism.NAME)
+		#nombre de la columna correspondiente a la clave primaria
+		pk = columns[0][0]
+		mapping_insert_ini = "INSERT INTO " + RDBHomomorphism.NAME + " VALUES "
+		mapping_insert_partial = ""
+		for key_mapping in mappings.keys():
+			#consulta para verificar que la clave del homomorfismo aun no esta en la base de datos
+			cur.execute("SELECT * FROM " + RDBHomomorphism.NAME + " WHERE " + pk + "='" + str(key_mapping) + "';")
+			data = cur.fetchall()
+			if not (len(data) > 0) :
+				mapping_insert_partial = mapping_insert_partial + "(" + str(key_mapping) + "),"
+
+		if len(mapping_insert_partial) > 0:
+			#saco la coma demas y agrego un punto y coma
+			mapping_insert_partial = mapping_insert_partial[:-1] + ";"
+			mapping_insert = mapping_insert_ini + mapping_insert_partial
+			cur.execute(mapping_insert)
+
+		con.commit()
+		con.close()
 

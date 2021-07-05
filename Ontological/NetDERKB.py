@@ -8,11 +8,13 @@ from Ontological.Variable import Variable
 from Ontological.Constant import Constant
 from Ontological.Atom import Atom
 from Ontological.Null import Null
+from Ontological.RDBHomomorphism import RDBHomomorphism
 from Diffusion_Process.NetDiffFact import NetDiffFact
 from Diffusion_Process.NLocalLabel import NLocalLabel
 from Diffusion_Process.ELocalLabel import ELocalLabel
 from Diffusion_Process.NetDiffNode import NetDiffNode
 from Diffusion_Process.NetDiffEdge import NetDiffEdge
+from Diffusion_Process.NetDiffGraph import NetDiffGraph
 
 class NetDERKB:
 	NULL_INFO = "null_info"
@@ -59,32 +61,11 @@ class NetDERKB:
 	def add_ont_data(self, atoms):
 		con = self.get_connection()
 		cur = con.cursor()
-
 		#filtrar los atomos que ya se encuentran en la base de datos
-		select_ini = 'SELECT * FROM '
 		filtered_atoms = []
 		for atom in atoms:
-			#consulta para obtener los nombres de las columnas de la tabla relativa al atomo "atom"
-			column_query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '"+ atom.getId() + "' ORDER BY ORDINAL_POSITION"
-			cur.execute(column_query)
-			columnas = cur.fetchall()
-			index = 0
-			select_query = select_ini + atom.getId() + ' WHERE '
-			terms = atom.get_terms()
-			'''
-			for columna in columnas:
-				select_query = select_query + columna[0] + " = " + terms[index].getId() + " AND "
-				index += 1'''
-			#saco el AND y espacios demas
-			#select_query = select_query[:-5]
-			#la primer columna es el nombre de la clave primaria, cuyo valor es el hash del atomo
-			pk_name = columnas[0][0]
-			select_query = select_query + pk_name + " = " + str(hash(atom))
-			
-			cur.execute(select_query)
-			data = cur.fetchall()
 			#si el atomo no se encuentra en la base de datos significa que puede ser agregado
-			if len(data) == 0:
+			if not self.exists(con, atom):
 				filtered_atoms.append(atom)
 
 		success = None
@@ -97,7 +78,12 @@ class NetDERKB:
 				
 				sql_queries_part[atom.getId()] = sql_queries_part[atom.getId()] + '(' + "'" + str(hash(atom)) + "',"
 				for term in atom.get_terms():
-					sql_queries_part[atom.getId()] = sql_queries_part[atom.getId()] + '\'' + str(term.getValue()) + '\'' + ','
+					string_value = str(term.getValue())
+					#saco cualquier caracter de escape que pueda contener
+					string_value = string_value.replace("\\", "")
+					#si contiene algun simbolo ' se le antepone el simbolo \
+					string_value = string_value.replace("'", "\\'")
+					sql_queries_part[atom.getId()] = sql_queries_part[atom.getId()] + "'" + string_value + "',"
 				#saco la coma que queda demas
 				sql_queries_part[atom.getId()] = sql_queries_part[atom.getId()][:-1]
 				sql_queries_part[atom.getId()] = sql_queries_part[atom.getId()] + '),'
@@ -112,19 +98,11 @@ class NetDERKB:
 			success = True
 		else:
 			success = False
-
 		con.commit()
 		con.close()
 
 		return success
 
-
-
-	def add_net_knowledge(self, knowledge, time):
-		self._net_db.add_knowledge(knowledge, time)
-
-	def add_facts(self, facts):
-		self._net_db.add_facts(facts)
 
 	def get_net_diff_facts(self):
 		result = set()
@@ -187,24 +165,22 @@ class NetDERKB:
 
 		return result
 
-	def _get_columns(self, table_name):
-		con = self.get_connection()
-		cur = con.cursor()
+	def get_columns(self, connection, table_name):
+		cur = connection.cursor()
 		#consulta para obtener los nombres de las columnas de la tabla "null_info"
 		column_query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '"+ str(table_name) + "' ORDER BY ORDINAL_POSITION"
 		
 		cur.execute(column_query)
 		columns = cur.fetchall()
-		con.commit()
-		con.close()
 		return columns
+
 
 	def create_null(self):
 		result = None
 		con = self.get_connection()
 		cur = con.cursor()
 		
-		columns = self._get_columns(NetDERKB.NULL_INFO)
+		columns = self.get_columns(con, NetDERKB.NULL_INFO)
 		#consulta para verificar cuantos valores nulls distintos ya fueron creados
 		query = "SELECT DISTINCT " + columns[1][0] + " FROM " + NetDERKB.NULL_INFO + ";"
 		cur.execute(query)
@@ -219,13 +195,22 @@ class NetDERKB:
 			null_info_atom = Atom(str(NetDERKB.NULL_INFO), [Constant(str(null.getValue())), Constant(str(atom.getId())), Constant(str(hash(atom)))])
 			self.add_ont_data({null_info_atom})
 
+	def exists(self, connection, atom):
+		columns = self.get_columns(connection, atom.getId())
+		cur = connection.cursor()
+		query = "SELECT * FROM " + str(atom.getId()) + " WHERE " + columns[0][0] + "=" + str(hash(atom)) + ";"
+		cur.execute(query)
+		data = cur.fetchall()
+		return len(data) > 0
+
 	def update_nulls(self, mapping):
+		success = False
 		if len(mapping) > 0:
 			
 			con = self.get_connection()
 			cur = con.cursor()
 			
-			nulls_info_columns = self._get_columns(NetDERKB.NULL_INFO)
+			nulls_info_columns = self.get_columns(con, NetDERKB.NULL_INFO)
 			for key in mapping.keys():
 				condicion1 = isinstance(mapping[key], Null)
 				condicion2 = isinstance(mapping[key], Constant)
@@ -234,7 +219,7 @@ class NetDERKB:
 					cur.execute(query_info_nulls)
 					nulls_info = cur.fetchall()
 					for row in nulls_info:
-						columns = self._get_columns(row[2])
+						columns = self.get_columns(con, row[2])
 						pk_col = columns[0][0]
 						#saco la primer columna que es relativa a la clave primaria
 						other_columns = columns[1:]
@@ -253,34 +238,67 @@ class NetDERKB:
 								terms.append(Constant(str(item)))
 							
 						atom = Atom(table_name, terms)
+						#hash before mapping
+						hash_bm = hash(atom)
 						atom.map(mapping)
 						if condicion1:
-							query_update_ini = "UPDATE "
-							query_update = query_update_ini + table_name + " SET "
-							for index in range(len(other_columns)):
-								query_update = query_update + other_columns[index][0] + "='" + atom.get_terms()[index].getValue() + "', "
+							if not self.exists(con, atom):
+								query_update_ini1 = "UPDATE " + table_name + " SET "
+								query_update_partial = ""
+								for index in range(len(other_columns)):
+									query_update_partial = query_update_partial + other_columns[index][0] + "='" + atom.get_terms()[index].getValue() + "', "
 
-							#quito la coma y el espacio demas
-							query_update = query_update[:-2]
-							query_update = query_update + " WHERE " + pk_col + "=" + fk + ";"
-							
-							cur.execute(query_update)
+								#quito la coma y el espacio demas
+								query_update_partial = query_update_partial[:-2]
+								query_update1 = query_update_ini1 + query_update_partial + " WHERE " + pk_col + "='" + fk + "';"
+								
+								cur.execute(query_update1)
+
+								query_update2 = "UPDATE " + NetDERKB.NULL_INFO + " SET " + nulls_info_columns[1][0] + "='" + str(mapping[key].getValue()) + "' WHERE " + nulls_info_columns[0][0] + "='" + str(row[0]) + "';"
+								cur.execute(query_update2)
+							else:
+								query_delete1 = "DELETE FROM " + table_name + " WHERE " + pk_col + "='" + str(hash_bm) + "';"
+								cur.execute(query_delete1)
+								query_delete2 = "DELETE FROM " + NetDERKB.NULL_INFO + " WHERE " + nulls_info_columns[3][0] + "='" + str(hash_bm) + "';"
+								cur.execute(query_delete2)
 
 						elif condicion2:
 							self.add_ont_data({atom})
 
-					if condicion1:
-						query_delete = "DELETE FROM " + NetDERKB.NULL_INFO + " WHERE " + nulls_info_columns[1][0] + "='" + str(key) + "';"
-						cur.execute(query_delete)
 			con.commit()
 			con.close()
+			success = True
+
+		return success
 		
 
 	def get_net_diff_graph(self):
-		'''NetDiffNode.ID
-		NetDiffEdge.ID'''
 
-		return self._net_diff_graph
+		node = Atom(NetDiffNode.ID, [Variable("ID")])
+		edge = Atom(NetDiffEdge.ID, [Variable("From"), Variable("To")])
+		h = RDBHomomorphism(self)
+		con = self.get_connection()
+		cur = con.cursor()
+		nodes = []
+		node_sql = h.to_SQL(node)
+		cur.execute(node_sql)
+		node_data = cur.fetchall()
+		for data in node_data:
+			nodes.append(NetDiffNode(data[1]))
+		edges = []
+		edge_sql = h.to_SQL(edge)
+		cur.execute(edge_sql)
+		edge_data = cur.fetchall()
+
+		for data in edge_data:
+			edges.append(NetDiffEdge(data[1], data[2]))
+
+		net_diff_graph = NetDiffGraph("graph", nodes, edges)
+
+		con.commit()
+		con.close()
+
+		return net_diff_graph
 
 
 	def get_netder_egds(self):

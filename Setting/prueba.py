@@ -176,6 +176,7 @@ def test1():
 		iteracion += 1
 
 
+
 body_symbol = 'news'
 def get_random_news_atoms(cant):
 	atoms = set()
@@ -214,8 +215,8 @@ def get_netDiffGraph(cant_nodes, cant_edges):
 			netDiffEdges.append(NetDiffEdge(node_id, neigh_id))
 
 	netDiffGraph = NetDiffGraph('graph', netDiffNodes, netDiffEdges)
-	nlabels = [NLocalLabel("covid19 doesn\\'t exist")]
-	gLabels = [GlobalLabel("trending(covid19 doesn\\'t exist)")]
+	nlabels = [NLocalLabel("covid19 doesn't exist")]
+	gLabels = [GlobalLabel("trending(covid19 doesn't exist)")]
 	#configura las Node Local Labels que van a estar disponibles
 	netDiffNodes[0].setLabels(nlabels)
 	#configura las Global Labels que van a estar disponibles
@@ -239,7 +240,7 @@ def test2():
 
 
 	inicio_graph = datetime.now()
-	netDiffGraph = get_netDiffGraph(cant_nodes = 3000, cant_edges = 3000)
+	netDiffGraph = get_netDiffGraph(cant_nodes = 1000, cant_edges = 1000)
 	fin_graph = datetime.now()
 	print('tiempo creacion grafo', (fin_graph - inicio_graph))
 	netDiffFacts = get_NetDiffFacts(elements= netDiffGraph.getNodes(), labels = next(iter(netDiffGraph.getNodes())).getLabels(), tmax = tmax)
@@ -254,7 +255,7 @@ def test2():
 	#---------------------------------------------------------------------------
 
 	#"atoms" lo voy a utilizar luego para crear la BD ontologica
-	cantidad_atomos = 2000
+	cantidad_atomos = 1000
 	atoms = get_random_news_atoms(cantidad_atomos)
 	atom1 = Atom('news', [Variable('Content'), Variable('FN_level')])
 	atom2 = GRE(Variable('FN_level'), Constant(0.1))
@@ -280,8 +281,8 @@ def test2():
 
 inicio = datetime.now()
 
-test1()
-#test2()
+#test1()
+test2()
 
 fin = datetime.now()
 
