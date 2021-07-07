@@ -8,7 +8,7 @@ class NetCompTarget(Atom):
 	ID = "net_comp_target"
 
 	def __init__(self, component, label, interval):
-		terms = [Constant(str(hash(component))), Constant(label), Constant(interval.lower), Constant(interval.upper)]
+		terms = [Constant(hash(component)), Constant(label.getValue()), Constant(interval.lower), Constant(interval.upper)]
 		super().__init__(NetCompTarget.ID, terms)
 		self._component = component
 		self._label = label

@@ -15,4 +15,3 @@ def __hash__(self):
 		mystring = mystring.encode('utf-8')
 		result = int(hashlib.sha1(mystring).hexdigest(), 16)
 	return result
-	return int(hashlib.sha1(string).hexdigest(), 16)

@@ -19,3 +19,6 @@ class Equal(Atom):
 
 	def __str__(self):
 		return self._terms[0].getId() + '=' + self._terms[1].getId()
+
+	def get_variables(self):
+		return []

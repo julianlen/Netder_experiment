@@ -4,7 +4,7 @@ import os
 class Schema():
   def __init__(self, filename='schema.xml'):
     try:
-      self._tree = ET.parse(os.path.dirname(os.path.realpath(__file__)) +  '/' + filename)
+      self._tree = ET.parse(filename)
     except Exception:
       msg = "ERROR: Invalid or missing schema.xml; please run 'python " + \
         "dbbackend/generate_schema.py' from the root directory."

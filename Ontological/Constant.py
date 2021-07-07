@@ -11,3 +11,5 @@ class Constant(Term):
 		mystring = str(self._value)
 		mystring = mystring.encode('utf-8')
 		return int(hashlib.sha1(mystring).hexdigest(), 16)
+
+

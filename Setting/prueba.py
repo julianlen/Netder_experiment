@@ -29,9 +29,11 @@ from Ontological.Variable import Variable
 from Ontological.Constant import Constant
 from Ontological.Homomorphism import Homomorphism
 from Ontological.NetCompTarget import NetCompTarget
+from ATLAST.dbbackend.schema import Schema
 
 
 config_db_path = os.path.dirname(os.path.realpath(__file__)) +  '/' + "config_db.json"
+schema_loc = os.path.dirname(os.path.realpath(__file__)) +  '/' + "schema.xml"
 
 def test1():
 	nodes = [NetDiffNode('0'), NetDiffNode('1'), NetDiffNode('2'), NetDiffNode('3')]
@@ -72,7 +74,7 @@ def test1():
 	atom12 = Atom('pre_hyp_fakenews2', [Variable('FN')])
 	atom13 = Atom('node', [Variable('N')])
 	atom14 = Equal(Variable('N'), Constant('0'))
-	nct2 = NetCompTarget(Atom('node', [Variable('X')]), 'A', portion.closed(0.5, 1))
+	nct2 = NetCompTarget(Atom('node', [Variable('X')]), NLocalLabel('A'), portion.closed(0.5, 1))
 
 
 
@@ -156,11 +158,12 @@ def test1():
 	#data es una lista de conjuntos, cada elemento corresponde a un conjunto de datos los cuales pueden ser atomos o net_diff_facts
 	#estos datos corresponden a un tiempo determinado en orden creciente (de alguna manera definen un bloque de procesamiento)
 	data = [data1, data2, data3]
-	kb = NetDERKB(data = set(), net_diff_graph = graph, config_db = config_db_path, netder_tgds = tgds1, netder_egds = egds, netdiff_lrules = local_rules, netdiff_grules = global_rules)
+	kb = NetDERKB(data = set(), net_diff_graph = graph, schema_loc = schema_loc, netder_tgds = tgds1, netder_egds = egds, netdiff_lrules = local_rules, netdiff_grules = global_rules)
 
 	chase = NetDERChase(kb, tmax)
 	
-	query1 = NetDERQuery(exist_var = [Variable('Botnet')], ont_cond = [Atom('hyp_fakenews', [Variable('HFN')]), Atom('hyp_is_resp', [Variable('HResp'), Variable('FN')]), Atom('hyp_malicious', [Variable('Mal')]), Atom('member', [Variable('UID1'), Variable('Botnet')])], time = (tmax, tmax))
+	#query1 = NetDERQuery(exist_var = [Variable('Botnet')], ont_cond = [Atom('hyp_fakenews', [Variable('HFN')]), Atom('hyp_is_resp', [Variable('HResp'), Variable('FN')]), Atom('hyp_malicious', [Variable('Mal')]), Atom('member', [Variable('UID1'), Variable('Botnet')])], time = (tmax, tmax))
+	query1 = NetDERQuery(exist_var = [], ont_cond = [Atom('hyp_fakenews', [Variable('HFN')]), Atom('hyp_is_resp', [Variable('HResp'), Variable('FN')]), Atom('hyp_malicious', [Variable('Mal')]), Atom('member', [Variable('UID1'), Variable('Botnet')])], time = (tmax, tmax))
 
 	iteracion = 0
 	for a in data:
@@ -263,15 +266,23 @@ def test2():
 	tgd_counter = 0
 	#news(Content, FN_level) ^ FN_level > 0.1 -> hyp_fakenews(Content) : (trending(trending(covid19 doesn\'t exist), [0.3,1]))
 	tgd1 = NetDERTGD(rule_id = tgd_counter, ont_body = [atom1, atom2], ont_head = [ont_head1], global_cond = [(glabel, portion.closed(0.3,1))])
+	global inicio_kb
+	global fin_kb
+	global inicio_q
+	global fin_q
 
-
-	kb = NetDERKB(data = set(), net_diff_graph = netDiffGraph, config_db = config_db_path, netder_tgds = [tgd1], netdiff_lrules = local_rules, netdiff_grules = global_rules)
+	inicio_kb = datetime.now()	
+	kb = NetDERKB(data = set(), net_diff_graph = netDiffGraph, schema_loc = schema_loc, netder_tgds = [tgd1], netdiff_lrules = local_rules, netdiff_grules = global_rules)
 	kb.add_ont_data(atoms)
 	kb.add_ont_data(netDiffFacts)
+	fin_kb = datetime.now()
+
 	chase = NetDERChase(kb, tmax)
 	#query1(HFN) = hyp_fakenews(HFN):[tmax, tmax], tener en cuenta que en este caso el tiempo no tiene importancia
 	query1 = NetDERQuery(ont_cond = [Atom('hyp_fakenews', [Variable('HFN')])], time = (tmax, tmax))
+	inicio_q = datetime.now()
 	answers = chase.answer_query(query1, 1)
+	fin_q = datetime.now()
 	print("NetDER Query")
 	print(query1)
 	print('-----')
@@ -287,3 +298,5 @@ test2()
 fin = datetime.now()
 
 print('tiempo total:', (fin - inicio))
+print('tiempo creacion kb:', (fin_kb - inicio_kb))
+print('tiempo para responder consulta:', (fin_q - inicio_q))

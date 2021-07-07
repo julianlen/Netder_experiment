@@ -107,12 +107,10 @@ class Atom:
 	#devueve los terminos que son variables
 	def get_variables(self):
 		result = []
-		aux = set()
 		for term in self._terms:
-			if isinstance(term, Variable) and not (term in aux):
+			if isinstance(term, Variable):
 				variable = copy.deepcopy(term)
 				result.append(variable)
-				aux.add(variable)
 		return result
 
 
