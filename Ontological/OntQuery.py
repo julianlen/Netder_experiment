@@ -11,11 +11,12 @@ class OntQuery:
 	def get_ont_body(self):
 		return self._ont_cond
 
-	
 	def get_variables(self):
 		result = []
 		for atom in self._ont_cond:
-			result = result + atom.get_variables()
+			for var in atom.get_variables():
+					var_copy = copy.deepcopy(var)
+					result.append(var_copy)
 
 		return result
 

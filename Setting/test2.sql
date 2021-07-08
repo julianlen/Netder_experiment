@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 01-07-2021 a las 01:05:29
+-- Tiempo de generación: 08-07-2021 a las 05:46:29
 -- Versión del servidor: 10.1.40-MariaDB
 -- Versión de PHP: 7.3.5
 
@@ -138,7 +138,7 @@ CREATE TABLE `net_diff_fact` (
   `4_interval_lower` float NOT NULL,
   `5_interval_upper` float NOT NULL,
   `6_t_lower` text NOT NULL,
-  `7_t_lower` text NOT NULL
+  `7_t_upper` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -210,6 +210,118 @@ CREATE TABLE `pre_hyp_fakenews2` (
   `1_primary_key` text NOT NULL,
   `2_noticia` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla `closer`
+--
+ALTER TABLE `closer`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `early_poster`
+--
+ALTER TABLE `early_poster`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `edge`
+--
+ALTER TABLE `edge`
+  ADD PRIMARY KEY (`1_primary_key`(40)),
+  ADD KEY `from_index` (`2_from`(40)),
+  ADD KEY `to_index` (`3_to`(40)) USING BTREE;
+
+--
+-- Indices de la tabla `hyp_botnet`
+--
+ALTER TABLE `hyp_botnet`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `hyp_fakenews`
+--
+ALTER TABLE `hyp_fakenews`
+  ADD PRIMARY KEY (`1_primary_key`(40)),
+  ADD KEY `noticia_index` (`2_noticia`(40));
+
+--
+-- Indices de la tabla `hyp_is_resp`
+--
+ALTER TABLE `hyp_is_resp`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `hyp_malicious`
+--
+ALTER TABLE `hyp_malicious`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `mapping`
+--
+ALTER TABLE `mapping`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `member`
+--
+ALTER TABLE `member`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `net_diff_fact`
+--
+ALTER TABLE `net_diff_fact`
+  ADD PRIMARY KEY (`1_primary_key`(40)),
+  ADD KEY `component_index` (`2_component`(40)),
+  ADD KEY `label_index` (`3_label`(40)),
+  ADD KEY `interval_lower_index` (`4_interval_lower`),
+  ADD KEY `interval_upper_index` (`5_interval_upper`),
+  ADD KEY `t_lower_index` (`6_t_lower`(40)),
+  ADD KEY `t_upper_index` (`7_t_upper`(40));
+
+--
+-- Indices de la tabla `news`
+--
+ALTER TABLE `news`
+  ADD PRIMARY KEY (`1_primary_key`(40)),
+  ADD KEY `content_index` (`2_content`(40)),
+  ADD KEY `fn_level_index` (`3_fn_level`);
+
+--
+-- Indices de la tabla `news_category`
+--
+ALTER TABLE `news_category`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `node`
+--
+ALTER TABLE `node`
+  ADD PRIMARY KEY (`1_primary_key`(40)),
+  ADD UNIQUE KEY `node_id_index` (`2_id`(40));
+
+--
+-- Indices de la tabla `null_info`
+--
+ALTER TABLE `null_info`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `pre_hyp_fakenews`
+--
+ALTER TABLE `pre_hyp_fakenews`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `pre_hyp_fakenews2`
+--
+ALTER TABLE `pre_hyp_fakenews2`
+  ADD PRIMARY KEY (`1_primary_key`(40));
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

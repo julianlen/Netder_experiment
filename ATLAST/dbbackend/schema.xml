@@ -5,140 +5,164 @@
 </dbname>
 <table name = "closer">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_id
+		2_id
 	</primaryKey>
 	<primaryKey>
-		_3_id
+		3_id
 	</primaryKey>
 </table>
 
 <table name = "early_poster">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_id
+		2_id
 	</primaryKey>
 	<primaryKey>
-		_3_noticia
+		3_noticia
 	</primaryKey>
 </table>
 
 <table name = "news_category">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_noticia
+		2_noticia
 	</primaryKey>
 	<primaryKey>
-		_3_categoria
+		3_categoria
 	</primaryKey>
 </table>
 
 <table name = "pre_hyp_fakenews">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_noticia
+		2_noticia
 	</primaryKey>
 </table>
 
 <table name = "pre_hyp_fakenews2">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_noticia
+		2_noticia
 	</primaryKey>
 </table>
 
 <table name = "hyp_botnet">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_id
+		2_id
 	</primaryKey>
 </table>
 
 
 <table name = "hyp_fakenews">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_noticia
+		2_noticia
 	</primaryKey>
 </table>
 
 <table name = "hyp_is_resp">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_id
+		2_id
 	</primaryKey>
 	<primaryKey>
-		_3_noticia
+		3_noticia
 	</primaryKey>
 </table>
 
 <table name = "hyp_malicious">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_id
+		2_id
 	</primaryKey>
 </table>
 
 <table name = "member">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_id_user
+		2_id_user
 	</primaryKey>
 	<primaryKey>
-		_3_botnet
+		3_botnet
 	</primaryKey>
 </table>
 
 <table name = "news">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_content
+		2_content
 	</primaryKey>
 	<primaryKey>
-		_3_fn_level
+		3_fn_level
 	</primaryKey>
 </table>
 
 <table name = "node">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_id
+		2_id
 	</primaryKey>
 </table>
 
 <table name = "edge">
 	<primaryKey>
-		_1_primary_key
+		1_primary_key
 	</primaryKey>
 	<primaryKey>
-		_2_from
+		2_from
 	</primaryKey>
 	<primaryKey>
-		_3_to
+		3_to
+	</primaryKey>
+</table>
+
+<table name = "net_diff_fact">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_component
+	</primaryKey>
+	<primaryKey>
+		3_label
+	</primaryKey>
+	<primaryKey>
+		4_interval_lower
+	</primaryKey>
+	<primaryKey>
+		5_interval_upper
+	</primaryKey>
+	<primaryKey>
+		6_t_lower
+	</primaryKey>
+	<primaryKey>
+		7_t_upper
 	</primaryKey>
 </table>
 
