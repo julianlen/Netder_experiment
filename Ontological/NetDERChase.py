@@ -35,7 +35,7 @@ class NetDERChase:
 
 	def _save(self, connection, mapping_key):
 		cur = connection.cursor()
-		columns = self._kb.get_columns(connection, RDBHomomorphism.NAME)
+		columns = self._kb.get_columns(RDBHomomorphism.NAME)
 		#nombre de la columna correspondiente a la clave primaria
 		pk = columns[0][0]
 		mapping_insert_ini = "INSERT INTO " + RDBHomomorphism.NAME + " VALUES "
@@ -391,8 +391,8 @@ class NetDERChase:
 					mapping = {}
 
 
+			self._kb.update_info(con)
 			#se lleva adelante el proceso de difusion
-			self._kb.update_graph()
 			net_diff_program = NetDiffProgram(self._kb.get_net_diff_graph(), self._tmax, self._kb.get_net_diff_facts(), self._kb.get_net_diff_lrules(), self._kb.get_net_diff_grules())
 			self._net_diff_interpretation = net_diff_program.diffusion()
 			result = None

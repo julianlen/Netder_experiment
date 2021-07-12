@@ -33,6 +33,7 @@ from Ontological.RDBHomomorphism import RDBHomomorphism
 
 
 config_db_path = os.path.dirname(os.path.realpath(__file__)) +  '/' + "config_db.json"
+schema_path = os.path.dirname(os.path.realpath(__file__)) +  '/' + "schema.xml"
 
 def test1():
 	nodes = [NetDiffNode('0'), NetDiffNode('1'), NetDiffNode('2'), NetDiffNode('3')]
@@ -157,7 +158,7 @@ def test1():
 	#data es una lista de conjuntos, cada elemento corresponde a un conjunto de datos los cuales pueden ser atomos o net_diff_facts
 	#estos datos corresponden a un tiempo determinado en orden creciente (de alguna manera definen un bloque de procesamiento)
 	data = [data1, data2, data3]
-	kb = NetDERKB(data = set(), net_diff_graph = graph, config_db = config_db_path, netder_tgds = tgds1, netder_egds = egds, netdiff_lrules = local_rules, netdiff_grules = global_rules)
+	kb = NetDERKB(data = set(), net_diff_graph = graph, config_db = config_db_path, schema_path = schema_path, netder_tgds = tgds1, netder_egds = egds, netdiff_lrules = local_rules, netdiff_grules = global_rules)
 
 	chase = NetDERChase(kb, tmax)
 	
@@ -257,7 +258,7 @@ def test2():
 	#---------------------------------------------------------------------------
 
 	#"atoms" lo voy a utilizar luego para crear la BD ontologica
-	cantidad_atomos = 2000
+	cantidad_atomos = 4000
 	atoms = get_random_news_atoms(cantidad_atomos)
 	atom1 = Atom('news', [Variable('Content'), Variable('FN_level')])
 	atom2 = GRE(Variable('FN_level'), Constant(0.1))
@@ -271,7 +272,7 @@ def test2():
 	global fin_q
 
 	inicio_kb = datetime.now()
-	kb = NetDERKB(data = set(), net_diff_graph = netDiffGraph, config_db = config_db_path, netder_tgds = [tgd1], netdiff_lrules = local_rules, netdiff_grules = global_rules)
+	kb = NetDERKB(data = set(), net_diff_graph = netDiffGraph, config_db = config_db_path, schema_path = schema_path, netder_tgds = [tgd1], netdiff_lrules = local_rules, netdiff_grules = global_rules)
 	kb.add_ont_data(atoms)
 	kb.add_ont_data(netDiffFacts)
 	fin_kb = datetime.now()

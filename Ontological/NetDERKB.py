@@ -15,11 +15,13 @@ from Diffusion_Process.ELocalLabel import ELocalLabel
 from Diffusion_Process.NetDiffNode import NetDiffNode
 from Diffusion_Process.NetDiffEdge import NetDiffEdge
 from Diffusion_Process.NetDiffGraph import NetDiffGraph
+from ATLAST.dbbackend.schema import Schema
 
 class NetDERKB:
 	NULL_INFO = "null_info"
 	counter_graph = 0
-	def __init__(self, data = set(), net_diff_graph = None, config_db = "config_db.json", netder_tgds=[], netder_egds = [], netdiff_lrules=[], netdiff_grules=[]):
+	def __init__(self, data = set(), net_diff_graph = None, config_db = "config_db.json",schema_path = "schema.xml", netder_tgds=[], netder_egds = [], netdiff_lrules=[], netdiff_grules=[]):
+		self._schema_path = schema_path
 		self._config_db = config_db
 		self._netder_tgds = netder_tgds
 		self._netder_egds = netder_egds
@@ -35,8 +37,13 @@ class NetDERKB:
 		edges = net_diff_graph.getEdges()
 		data = data.union(nodes)
 		data = data.union(edges)
+		self._load_schema()
+		con = self.get_connection()
+		self._load_tuples_id(con)
 		self.add_ont_data(data)
-		self._net_diff_graph = net_diff_graph
+		self.update_info(con)
+		con.commit()
+		con.close()
 
 
 	def get_config_db(self):
@@ -59,6 +66,35 @@ class NetDERKB:
 
 		return con
 
+	def _load_tuples_id(self, connection):
+		self._tuples_id = set()
+		cur = connection.cursor()
+		for table_name in self._tables.keys():
+			columns = self.get_columns(table_name)
+			query = "SELECT "+ columns[0] + " FROM " + table_name + ";"
+			cur.execute(query)
+			data = cur.fetchall()
+			for row in data:
+				self._tuples_id.add(row[0])
+
+
+	def _load_schema(self):
+		self._schema = Schema(self._schema_path)
+		self._tables = {}
+		self._tables['null_info'] = {'columns': ['1_primary_key', '2_value', '3_table_name', '4_foreign_key']}
+		self._tables['mapping'] = {'columns': ['1_primary_key']}
+		self._tables['net_diff_fact'] = {'columns': ['1_primary_key', '2_component', '3_label', '4_interval_lower', '5_interval_upper', '6_t_lower', '7_t_upper']}
+		data = self._schema.getAllData()
+		for table_name in data["tables"].keys():
+			self._tables[table_name] = {'columns':[]}
+			for pk in data["tables"][table_name]['primary_keys']:
+				col = pk.replace("\n", "")
+				col = col.replace("\t", "")
+				self._tables[table_name]['columns'].append(col)
+
+	def get_schema(self):
+		return self._schema
+
 
 	def add_ont_data(self, atoms):
 		con = self.get_connection()
@@ -69,6 +105,7 @@ class NetDERKB:
 			#si el atomo no se encuentra en la base de datos significa que puede ser agregado
 			if not self.exists(con, atom):
 				filtered_atoms.append(atom)
+				self._tuples_id.add(str(hash(atom)))
 
 		success = None
 		if len(filtered_atoms) > 0:
@@ -105,11 +142,12 @@ class NetDERKB:
 
 		return success
 
-
 	def get_net_diff_facts(self):
+		return self._net_diff_facts
+
+	def _update_net_diff_facts(self, connection):
 		result = set()
-		con = self.get_connection()
-		cur = con.cursor()
+		cur = connection.cursor()
 		tables = {"net_diff_fact": {"name":NetDiffFact.ID}, "node": {"name":NetDiffNode.ID}, "edge": {"name":NetDiffEdge.ID}}
 		for key in tables.keys():
 			column_query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '"+ tables[key]["name"] + "' ORDER BY ORDINAL_POSITION"
@@ -162,18 +200,10 @@ class NetDERKB:
 			edge = NetDiffEdge(row[0], row[1])
 			result.add(NetDiffFact(edge, ELocalLabel(row[1]), portion.closed(float(row[2]), float(row[3])), int(row[4]), int(row[5])))
 
-		con.commit()
-		con.close()
+		self._net_diff_facts = result
 
-		return result
-
-	def get_columns(self, connection, table_name):
-		cur = connection.cursor()
-		#consulta para obtener los nombres de las columnas de la tabla "null_info"
-		column_query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '"+ str(table_name) + "' ORDER BY ORDINAL_POSITION"
-		
-		cur.execute(column_query)
-		columns = cur.fetchall()
+	def get_columns(self, table_name):
+		columns = self._tables[table_name]['columns']
 		return columns
 
 
@@ -182,7 +212,7 @@ class NetDERKB:
 		con = self.get_connection()
 		cur = con.cursor()
 		
-		columns = self.get_columns(con, NetDERKB.NULL_INFO)
+		columns = self.get_columns(NetDERKB.NULL_INFO)
 		#consulta para verificar cuantos valores nulls distintos ya fueron creados
 		query = "SELECT DISTINCT " + columns[1][0] + " FROM " + NetDERKB.NULL_INFO + ";"
 		cur.execute(query)
@@ -198,12 +228,7 @@ class NetDERKB:
 			self.add_ont_data({null_info_atom})
 
 	def exists(self, connection, atom):
-		columns = self.get_columns(connection, atom.getId())
-		cur = connection.cursor()
-		query = "SELECT * FROM " + str(atom.getId()) + " WHERE " + columns[0][0] + "=" + str(hash(atom)) + ";"
-		cur.execute(query)
-		data = cur.fetchall()
-		return len(data) > 0
+		return str(hash(atom)) in self._tuples_id
 
 	def update_nulls(self, mapping):
 		success = False
@@ -212,7 +237,7 @@ class NetDERKB:
 			con = self.get_connection()
 			cur = con.cursor()
 			
-			nulls_info_columns = self.get_columns(con, NetDERKB.NULL_INFO)
+			nulls_info_columns = self.get_columns(NetDERKB.NULL_INFO)
 			for key in mapping.keys():
 				condicion1 = isinstance(mapping[key], Null)
 				condicion2 = isinstance(mapping[key], Constant)
@@ -221,7 +246,7 @@ class NetDERKB:
 					cur.execute(query_info_nulls)
 					nulls_info = cur.fetchall()
 					for row in nulls_info:
-						columns = self.get_columns(con, row[2])
+						columns = self.get_columns(row[2])
 						pk_col = columns[0][0]
 						#saco la primer columna que es relativa a la clave primaria
 						other_columns = columns[1:]
@@ -273,13 +298,12 @@ class NetDERKB:
 
 		return success
 		
-	def update_graph(self):
+	def _update_graph(self,connection):
 
 		node = Atom(NetDiffNode.ID, [Variable("ID")])
 		edge = Atom(NetDiffEdge.ID, [Variable("From"), Variable("To")])
 		h = RDBHomomorphism(self)
-		con = self.get_connection()
-		cur = con.cursor()
+		cur = connection.cursor()
 		nodes = []
 		node_sql = h.to_SQL(node)
 		cur.execute(node_sql)
@@ -296,10 +320,12 @@ class NetDERKB:
 
 		net_diff_graph = NetDiffGraph("graph", nodes, edges)
 
-		con.commit()
-		con.close()
 		NetDERKB.counter_graph += 1
 		self._net_diff_graph = net_diff_graph
+
+	def update_info(self, connection):
+		self._update_graph(connection)
+		self._update_net_diff_facts(connection)
 
 	def get_net_diff_graph(self):
 		return self._net_diff_graph
