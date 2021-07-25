@@ -193,7 +193,7 @@ def get_random_news_atoms(cant):
 
 def get_new_graph(num_nodes, num_edges):
 	csv_graph_location = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + "/graph_structure/graph(n="+ str(num_nodes) +", e="+ str(num_edges) + ").csv"
-	executable_location = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/executable/PaRMAT.exe'
+	executable_location = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/executable/PaRMAT2.exe'
 	subprocess.call([executable_location, "-nEdges", str(num_edges), "-nVertices", str(num_nodes), "-noEdgeToSelf", "-noDuplicateEdges", "-output", csv_graph_location])
 	graph = {}
 	

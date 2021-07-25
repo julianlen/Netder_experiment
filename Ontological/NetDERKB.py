@@ -58,7 +58,8 @@ class NetDERKB:
 		        password=config_data['password'],
 		        host=config_data['host'],
 		        port=config_data['port'],
-		        database=config_data['database']
+		        database=config_data['database'],
+				unix_socket=config_data['unix_socket']
 		        )
 		except mariadb.Error as e:
 			print(f"Error connecting to MariaDB Platform: {e}")

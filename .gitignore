@@ -1,3 +1,6 @@
 Git_ignore/*
 *.pyc
 Datasets/*
+.DS_Store
+.ipynb_checkpoints
+.idea

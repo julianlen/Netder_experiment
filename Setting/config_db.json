@@ -3,5 +3,6 @@
     "password" : "",
     "host" : "localhost",
     "port" : 3306,
-    "database" : "test2"
+    "database" : "test2",
+    "unix_socket" : "/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock"
 }
