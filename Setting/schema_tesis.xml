@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<root>
+<dbname>
+	blockchain_db
+</dbname>
+<table name = "account">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_address
+	</primaryKey>
+</table>
+<table name = "hyp_malicioso">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_address
+	</primaryKey>
+	<primaryKey>
+		3_block_number
+	</primaryKey>
+</table>
+<table name = "is_owner">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_address
+	</primaryKey>
+	<primaryKey>
+		3_address
+	</primaryKey>
+</table>
+<table name = "invoke">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_address
+	</primaryKey>
+	<primaryKey>
+		3_address
+	</primaryKey>
+	<primaryKey>
+		4_block_number
+	</primaryKey>
+</table>
+<table name = "hyp_same_person">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_address
+	</primaryKey>
+	<primaryKey>
+		3_address
+	</primaryKey>
+</table>
+<table name = "is_smart_contract">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_address
+	</primaryKey>
+</table>
+<table name = "is_eoa">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_address
+	</primaryKey>
+</table>
+<table name = "hyp_malicious">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_address
+	</primaryKey>
+	<primaryKey>
+		3_block_number
+	</primaryKey>
+</table>
+</root>
