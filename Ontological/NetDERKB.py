@@ -30,18 +30,18 @@ class NetDERKB:
 		for rule in aux_rules:
 			rule.set_id(counter)
 			counter = counter + 1
-		self._netdiff_lrules = netdiff_lrules
-		self._netdiff_grules = netdiff_grules
-		self._net_diff_graph = net_diff_graph
-		nodes = net_diff_graph.getNodes()
-		edges = net_diff_graph.getEdges()
-		data = data.union(nodes)
-		data = data.union(edges)
+		# self._netdiff_lrules = netdiff_lrules
+		# self._netdiff_grules = netdiff_grules
+		# self._net_diff_graph = net_diff_graph
+		# nodes = net_diff_graph.getNodes()
+		# edges = net_diff_graph.getEdges()
+		# data = data.union(nodes)
+		# data = data.union(edges)
 		self._load_schema()
 		con = self.get_connection()
 		self._load_tuples_id(con)
 		self.add_ont_data(data)
-		self.update_info(con)
+		# self.update_info(con)
 		con.commit()
 		con.close()
 
@@ -325,8 +325,9 @@ class NetDERKB:
 		self._net_diff_graph = net_diff_graph
 
 	def update_info(self, connection):
-		self._update_graph(connection)
-		self._update_net_diff_facts(connection)
+		pass
+		# self._update_graph(connection)
+		# self._update_net_diff_facts(connection)
 
 	def get_net_diff_graph(self):
 		return self._net_diff_graph

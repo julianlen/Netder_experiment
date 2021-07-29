@@ -17,7 +17,7 @@ class NetDERChase:
 		self._kb = kb
 		self._tmax = tmax
 		self._config_db = config_db
-		self._net_diff_interpretation = NetDiffInterpretation(self._kb.get_net_diff_graph(), self._tmax)
+		# self._net_diff_interpretation = NetDiffInterpretation(self._kb.get_net_diff_graph(), self._tmax)
 		self._h = RDBHomomorphism(self._kb)
 		
 
@@ -66,51 +66,51 @@ class NetDERChase:
 
 	#obtiene todos los mapeos posibles del cuerpo de la regla "rule" en el tiempo "time", considerando la base de datos de la KB self._kb
 	def get_body_mapping(self, rule, time):
-		net_db = []
-		cloned_net_body = copy.deepcopy(rule.get_net_body())
-		for nct in cloned_net_body:
-			net_db.append(nct.getComponent())
+		# net_db = []
+		# cloned_net_body = copy.deepcopy(rule.get_net_body())
+		# for nct in cloned_net_body:
+		# 	net_db.append(nct.getComponent())
 		#net_db almacena los atomos involucrados en el cuerpo de la regla (rule) y que estan referidos a nodos o arcos de la red
 
 
 		#se busca mapear los atomos del cuerpo ontologico y los atomos relativos de nodos y arcos, en la base de datos
-		mappings = self._get_atoms_mapping(rule.get_ont_body() + net_db)
+		mappings = self._get_atoms_mapping(rule.get_ont_body()) # + net_db)
 
-		aux_body_mapping = []
-		if len(mappings) > 0:
-			for body_mapping in mappings:
-				for key in body_mapping.keys():
-					
-					if (len(time) > 0):
+		# aux_body_mapping = []
+		# if len(mappings) > 0:
+		# 	for body_mapping in mappings:
+		# 		for key in body_mapping.keys():
+		#
+					# if (len(time) > 0):
 						#almacena los componentes del grafo (nodos o arcos) mapeados de acuerdo "body_mapping[key]"
-						net_db = []
-						cloned_net_body = copy.deepcopy(rule.get_net_body())
-						for nct in cloned_net_body:
-							net_db.append(nct.getComponent())
-						for atom in net_db:
-							atom.map(body_mapping[key])
+						# net_db = []
+						# cloned_net_body = copy.deepcopy(rule.get_net_body())
+						# for nct in cloned_net_body:
+						# 	net_db.append(nct.getComponent())
+						# for atom in net_db:
+						# 	atom.map(body_mapping[key])
 						#se verifica si hay condiciones locales de la red por verificar
-						if len(cloned_net_body) > 0:
-							for nct in cloned_net_body:
-								comp = self._kb.get_comp_from_atom(nct.getComponent())
-								for t in range(time[0], time[1] + 1):
-									#se verifican las condiciones locales de la regla para cada tiempo
-									if self._net_diff_interpretation.isSatisfied(t, comp, (nct.getLabel(), nct.getBound())):
-										#se verifican las condiciones globales de la regla para cada tiempo
-										if self._net_diff_interpretation.areSatisfied(t, self._kb.get_net_diff_graph(), rule.get_global_cond()):
-											aux_body_mapping.append({key: body_mapping[key]})
-
-						else:
-							for t in range(time[0], time[1] + 1):
-								#se verifican las condiciones globales de la regla para cada tiempo
-								if self._net_diff_interpretation.areSatisfied(t, self._kb.get_net_diff_graph(), rule.get_global_cond()):
-									aux_body_mapping.append({key: body_mapping[key]})
+						# if len(cloned_net_body) > 0:
+						# 	for nct in cloned_net_body:
+						# 		comp = self._kb.get_comp_from_atom(nct.getComponent())
+						# 		for t in range(time[0], time[1] + 1):
+						# 			#se verifican las condiciones locales de la regla para cada tiempo
+						# 			if self._net_diff_interpretation.isSatisfied(t, comp, (nct.getLabel(), nct.getBound())):
+						# 				#se verifican las condiciones globales de la regla para cada tiempo
+						# 				if self._net_diff_interpretation.areSatisfied(t, self._kb.get_net_diff_graph(), rule.get_global_cond()):
+						# 					aux_body_mapping.append({key: body_mapping[key]})
+						#
+						# else:
+						# 	for t in range(time[0], time[1] + 1):
+						# 		#se verifican las condiciones globales de la regla para cada tiempo
+						# 		if self._net_diff_interpretation.areSatisfied(t, self._kb.get_net_diff_graph(), rule.get_global_cond()):
+						# 			aux_body_mapping.append({key: body_mapping[key]})
 						
-					else:
+					# else:
 						#si no se especifica tiempo no se verifican condiciones de la red
-						aux_body_mapping = mappings
+						# aux_body_mapping = mappings
 
-		mappings = aux_body_mapping
+		# mappings = aux_body_mapping
 
 		return mappings
 
@@ -310,7 +310,6 @@ class NetDERChase:
 											#paso (6.4) para la parte de red
 											success = False
 											break
-											break
 									term_i = term_i + 1
 						if (success):
 							#si la EGD se safisface para el mapeo body_mapping[key_list[key_index]], se actualizan los nulls (en caso de ser necesario)
@@ -337,7 +336,7 @@ class NetDERChase:
 		#se inicializa la interpretacion para la difusion, donde cada etiqueta tiene incertidumbre maxima, es decir, intervalo [0,1]
 		#en ese caso, las unicas consultas de red que pueden satisfacerse son las que tengan como intervalo [0,1]
 		#esas consultas no tienen mucho sentido porque la respuesta obtenida no te proporciona informacion en si
-		self._net_diff_interpretation = NetDiffInterpretation(self._kb.get_net_diff_graph(), self._tmax)
+		# self._net_diff_interpretation = NetDiffInterpretation(self._kb.get_net_diff_graph(), self._tmax)
 		#se realizan iteraciones hasta una determinada cota entera (politica) o una condicion interna se cumpla
 		while(counter <= int_bound and seguir):
 			mapping = {}
@@ -391,10 +390,10 @@ class NetDERChase:
 					mapping = {}
 
 
-			self._kb.update_info(con)
+			# self._kb.update_info(con)
 			#se lleva adelante el proceso de difusion
-			net_diff_program = NetDiffProgram(self._kb.get_net_diff_graph(), self._tmax, self._kb.get_net_diff_facts(), self._kb.get_net_diff_lrules(), self._kb.get_net_diff_grules())
-			self._net_diff_interpretation = net_diff_program.diffusion()
+			# net_diff_program = NetDiffProgram(self._kb.get_net_diff_graph(), self._tmax, self._kb.get_net_diff_facts(), self._kb.get_net_diff_lrules(), self._kb.get_net_diff_grules())
+			# self._net_diff_interpretation = net_diff_program.diffusion()
 			result = None
 			seguir = True
 			counter = counter + 1
