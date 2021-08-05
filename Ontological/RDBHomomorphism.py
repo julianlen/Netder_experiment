@@ -68,7 +68,7 @@ class RDBHomomorphism(Homomorphism):
 			# Set up a symbol table and code generation visitor
 		
 			symbolTable = SymTable()
-			codegenVisitor = IRGenerator(schema.Schema())
+			codegenVisitor = IRGenerator(self._netder_kb.get_schema())
 			sqlGeneratorVisitor = SQLGenerator()
 			# Generate the symbol table
 			

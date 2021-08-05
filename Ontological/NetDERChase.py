@@ -397,8 +397,8 @@ class NetDERChase:
 			result = None
 			seguir = True
 			counter = counter + 1
-			print('final net_diff_interpretation')
-			print(str(self._net_diff_interpretation))
+			# print('final net_diff_interpretation')
+			# print(str(self._net_diff_interpretation))
 		#cuando las iteraciones terminan se deben construir las respuestas, que son mapeos de las variables no cuantificadas a valores de la base de datos
 		result = []
 		for key_pos in mapping.keys():

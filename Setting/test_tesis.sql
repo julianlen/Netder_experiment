@@ -33,18 +33,6 @@ CREATE TABLE `account` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
-
---
---
-
-CREATE TABLE `hyp_malicioso` (
-  `1_primary_key` text NOT NULL,
-  `2_address` text NOT NULL,
-  `3_block_number` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
 --
 --
 
@@ -183,13 +171,6 @@ CREATE TABLE `net_diff_fact` (
 --
 
 ALTER TABLE `account`
-  ADD PRIMARY KEY (`1_primary_key`(40));
-
---
--- Indices de la tabla `hyp_malicioso`
---
-
-ALTER TABLE `hyp_malicioso`
   ADD PRIMARY KEY (`1_primary_key`(40));
 
 --

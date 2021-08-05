@@ -11,7 +11,7 @@
 		2_address
 	</primaryKey>
 </table>
-<table name = "hyp_malicioso">
+<table name = "hyp_malicious">
 	<primaryKey>
 		1_primary_key
 	</primaryKey>
@@ -72,17 +72,6 @@
 	</primaryKey>
 	<primaryKey>
 		2_address
-	</primaryKey>
-</table>
-<table name = "hyp_malicious">
-	<primaryKey>
-		1_primary_key
-	</primaryKey>
-	<primaryKey>
-		2_address
-	</primaryKey>
-	<primaryKey>
-		3_block_number
 	</primaryKey>
 </table>
 </root>
