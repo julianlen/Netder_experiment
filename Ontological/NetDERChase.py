@@ -123,7 +123,7 @@ class NetDERChase:
 		#almacena todas la posibles formas (una por cada mapeo posible) de nuevo conocimiento ontologico obtenido de aplicar la tgd
 		ont_head_result = []
 		#almacena todas la posibles formas (una por cada mapeo posible) de nuevo conocimiento de red obtenido de aplicar la tgd
-		net_head_result = []
+		# net_head_result = []
 		#se verifica si hay algun mapeo
 		
 		if len(mappings) > 0:
@@ -135,10 +135,10 @@ class NetDERChase:
 						#se aplica cada mapeo disponible en la cabeza de la tgd
 						#se obtiene conocimiento ontologico y de red
 						#"net_head_comp" almacena una copia de la parte de red de la cabeza de la tgd relativa a los componentes del grafo (nodos o arcos)
-						net_head_comp = []
-						cloned_net_head = copy.deepcopy(tgd.get_net_head())
-						for nct in cloned_net_head:
-							net_head_comp.append(nct.getComponent())
+						# net_head_comp = []
+						# cloned_net_head = copy.deepcopy(tgd.get_net_head())
+						# for nct in cloned_net_head:
+						# 	net_head_comp.append(nct.getComponent())
 						#"cloned_ont_head" almacena una copia de la parte ontologica de la cabeza de la tgd
 						cloned_ont_head = copy.deepcopy(tgd.get_ont_head())
 						
@@ -146,10 +146,10 @@ class NetDERChase:
 						for atom in cloned_ont_head:
 							atom.map(body_mapping[key])
 						#se aplica cada mapeo a cada componente del grafo de la parte de red de la cabeza de la tgd
-						for comp in net_head_comp:
-							comp.map(body_mapping[key])
+						# for comp in net_head_comp:
+						# 	comp.map(body_mapping[key])
 						ont_head_result.append(cloned_ont_head)
-						net_head_result.append(cloned_net_head)
+						# net_head_result.append(cloned_net_head)
 		#se almacena el nuevo conocimiento obtenido por la tgd
 		#el primer elemento de la lista contiene todas la posibles formas de nuevo conocimiento ontologico obtenido de aplicar la tgd
 		#el segunfo elemento de la lista contiene todas la posibles formas de nuevo conocimiento de red obtenido de aplicar la tgd
@@ -166,30 +166,30 @@ class NetDERChase:
 						#se aplica el mapeo a cada atomo, para asignar el Null creado anteriormente
 						other_atom.map({variable.getId(): null})
 						self._kb.save_null_info(other_atom, null)
-					for nct in net_head_result[index]:
-						#se aplica el mapeo a cada componente de red de la cabeza, para asignar el Null creado anteriormente
-						nct.getComponent().map({variable.getId(): null})
-						self._kb.save_null_info(nct.getComponent(), null)
+					# for nct in net_head_result[index]:
+					# 	#se aplica el mapeo a cada componente de red de la cabeza, para asignar el Null creado anteriormente
+					# 	nct.getComponent().map({variable.getId(): null})
+					# 	self._kb.save_null_info(nct.getComponent(), null)
 			#los atomos de la parte ontologica de la cabeza de la tgd totalmente mapeados se almacenan en la primer posicion de "aux_result"
 			aux_result[0] = aux_result[0].union(set(possibility))
 
 		#posiblemente aun existan variables existenciales en la parte de red de la cabeza de la tgd
 		#se repite un proceso similar al de la parte ontologica, para instanciar variables existenciales restantes en la parte de red
 
-		for possibility in net_head_result:
-			net_diff_knwl = set()
-			for nct in possibility:
-				for variable in nct.getComponent().get_variables():
-					null = self._kb.create_null()
-					for nct in possibility:
-						nct.getComponent().map({variable.getId(): null})
-						self._kb.save_null_info(nct.getComponent(), null)
-				net_diff_knwl.add(NetDiffFact(nct.getComponent(), nct.getLabel(), nct.getBound(), time[0], time[1]))
-				net_diff_knwl.add(nct.getComponent())
-			#el nuevo conocimiento totalmente mapeado se almacena en la segunda posicion de "aux_result"
-			aux_result[1] = aux_result[1].union(net_diff_knwl)
-
-
+		# for possibility in net_head_result:
+		# 	net_diff_knwl = set()
+		# 	for nct in possibility:
+		# 		for variable in nct.getComponent().get_variables():
+		# 			null = self._kb.create_null()
+		# 			for nct in possibility:
+		# 				nct.getComponent().map({variable.getId(): null})
+		# 				self._kb.save_null_info(nct.getComponent(), null)
+		# 		net_diff_knwl.add(NetDiffFact(nct.getComponent(), nct.getLabel(), nct.getBound(), time[0], time[1]))
+		# 		net_diff_knwl.add(nct.getComponent())
+		# 	#el nuevo conocimiento totalmente mapeado se almacena en la segunda posicion de "aux_result"
+		# 	aux_result[1] = aux_result[1].union(net_diff_knwl)
+		#
+		#
 
 		return aux_result
 
