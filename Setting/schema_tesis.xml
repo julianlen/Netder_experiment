@@ -3,14 +3,6 @@
 <dbname>
 	blockchain_db
 </dbname>
-<table name = "account">
-	<primaryKey>
-		1_primary_key
-	</primaryKey>
-	<primaryKey>
-		2_address
-	</primaryKey>
-</table>
 <table name = "hyp_malicious">
 	<primaryKey>
 		1_primary_key
@@ -56,6 +48,9 @@
 	</primaryKey>
 	<primaryKey>
 		3_address
+	</primaryKey>
+	<primaryKey>
+		4_block_number
 	</primaryKey>
 </table>
 <table name = "is_smart_contract">

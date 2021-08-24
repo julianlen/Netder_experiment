@@ -59,6 +59,7 @@ class RDBHomomorphism(Homomorphism):
 	def __init__(self, netder_kb):
 		self._netder_kb = netder_kb
 		self._sql_queries = {}
+		self._contador = 0
 
 	def to_SQL(self, query):
 		inicio_trans = datetime.now()
@@ -90,19 +91,28 @@ class RDBHomomorphism(Homomorphism):
 	#historical_included indica si mapeos que ya hayan sido utilizados pueden ser incluidos en la respuesta
 	#el parametro "id_atoms" se utiliza para diferenciar dos conjuntos de atomos sintacticamente iguales pero que corresponden a reglas diferentes
 	#esto evita que una vez que un mapeo sea utilizado para el cuerpo de una regla luego ya no pueda ser utilizado para otra con un cuerpo sintacticamente igual
+
 	def get_atoms_mapping(self, atoms):
 		inicio_homomorph = datetime.now()
 		
 		exist_var = []
 		for atom in atoms:
 			pk_variable = atom.get_pk_variable()
+			print('>>>>>> pk_variable')
+			print(str(pk_variable))
 			if not pk_variable is None:
 				exist_var.append(pk_variable)
 		query = OntQuery(exist_var = exist_var, ont_cond = atoms)
 		
 		sql_query = self.to_SQL(query)
-		
+
+		print('>>>>>>>>>>> sql_query')
+		print(sql_query)
+
 		var_list = query.get_free_variables()
+
+		print('>>>>>>>>>>>>>> var_list')
+		print(var_list)
 
 		con = self._netder_kb.get_connection()
 		cur = con.cursor()
@@ -111,14 +121,15 @@ class RDBHomomorphism(Homomorphism):
 		cur.execute(sql_query)
 		fin_sql = datetime.now()
 		RDBHomomorphism.HOMOMORPH_SQL_QUERY += (fin_sql - inicio_sql)
-
 		data = cur.fetchall()
+		print('>>>>>>>>>>>>>> data')
+		print(data)
+
 		con.commit()
 		con.close()
 
 
 		result = Mapping(var_list, data)
-
 
 		fin_homomorph = datetime.now()
 		RDBHomomorphism.HOMOMORPH_BUILT_TIME += (fin_homomorph - inicio_homomorph)

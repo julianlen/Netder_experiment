@@ -21,17 +21,6 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `blockchain_db`
 --
-
--- --------------------------------------------------------
-
---
---
-
-CREATE TABLE `account` (
-  `1_primary_key` text NOT NULL,
-  `2_address` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 -- --------------------------------------------------------
 --
 --
@@ -64,7 +53,8 @@ CREATE TABLE `invoke` (
 CREATE TABLE `hyp_same_person` (
   `1_primary_key` text NOT NULL,
   `2_address` text NOT NULL,
-  `3_address` text NOT NULL
+  `3_address` text NOT NULL,
+  `4_block_number` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -165,13 +155,6 @@ CREATE TABLE `net_diff_fact` (
 --
 -- Índices para tablas volcadas
 --
-
---
--- Indices de la tabla `account`
---
-
-ALTER TABLE `account`
-  ADD PRIMARY KEY (`1_primary_key`(40));
 
 --
 -- Indices de la tabla `is_owner`

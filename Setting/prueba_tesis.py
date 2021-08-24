@@ -1,30 +1,15 @@
-import functools
 import hashlib
-import itertools
-import json
-import operator
 import os, sys
+import mariadb as maria
 
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 
+from Setting.EvaluatorTesis import EvaluatorTesis
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from datetime import datetime
-import csv
-import portion
-import random
-import string
-import subprocess
-from Diffusion_Process.NetDiffNode import NetDiffNode
-from Diffusion_Process.NetDiffEdge import NetDiffEdge
-from Diffusion_Process.NetDiffFact import NetDiffFact
-from Diffusion_Process.NLocalLabel import NLocalLabel
-from Diffusion_Process.GlobalLabel import GlobalLabel
-from Diffusion_Process.NetDiffLocalRule import NetDiffLocalRule
-from Diffusion_Process.NetDiffGlobalRule import NetDiffGlobalRule
-from Diffusion_Process.Average import Average
-from Diffusion_Process.EnhancedTipping import EnhancedTipping
 from Ontological.NetDERKB import NetDERKB
 from Ontological.NetDERChase import NetDERChase
 from Ontological.NetDERQuery import NetDERQuery
@@ -36,11 +21,7 @@ from Ontological.Distinct import Distinct
 from Ontological.Equal import Equal
 from Ontological.Variable import Variable
 from Ontological.Constant import Constant
-from Ontological.Homomorphism import Homomorphism
-from Ontological.NetCompTarget import NetCompTarget
 from Ontological.RDBHomomorphism import RDBHomomorphism
-from itertools import chain
-from functools import reduce
 
 
 
@@ -50,6 +31,7 @@ entire_tx_dataset = os.path.dirname(os.path.realpath(__file__)) + '/' + "0to9999
 entire_contract_dataset = os.path.dirname(os.path.realpath(__file__)) + '/' + "0to999999_ContractInfo.csv"
 dummy_tx_dataset = os.path.dirname(os.path.realpath(__file__)) + '/' + "my_transactions"
 dummy_contract_dataset = os.path.dirname(os.path.realpath(__file__)) + '/' + "my_contracts"
+dummy_ground_truth = os.path.dirname(os.path.realpath(__file__)) + '/' + "my_ground_truth"
 
 tmax = 2
 
@@ -88,7 +70,7 @@ global inicio_di
 global fin_din
 
 
-drop_account = "TRUNCATE TABLE `account`;"
+# drop_account = "TRUNCATE TABLE `account`;"
 drop_edge = "TRUNCATE TABLE `edge`;"
 drop_hyp_malicious = "TRUNCATE TABLE `hyp_malicious`; "
 drop_hyp_same_person = "TRUNCATE TABLE `hyp_same_person`; "
@@ -101,8 +83,26 @@ drop_net_diff_fact = "TRUNCATE TABLE `net_diff_fact`; "
 drop_node = "TRUNCATE TABLE `node`; "
 drop_null_info = "TRUNCATE TABLE `null_info`;"
 
+show_edge = "SELECT * FROM `edge`;"
+show_hyp_malicious = "SELECT * FROM `hyp_malicious`; "
+show_hyp_same_person = "SELECT * FROM `hyp_same_person`; "
+show_invoke = "SELECT * FROM `invoke`; "
+show_is_eoa = "SELECT * FROM `is_eoa`; "
+show_is_owner = "SELECT * FROM `is_owner`; "
+show_is_smart_contract = "SELECT * FROM `is_smart_contract`; "
+show_mapping = "SELECT * FROM `mapping`; "
+show_net_diff_fact = "SELECT * FROM `net_diff_fact`; "
+show_node = "SELECT * FROM `node`; "
+show_null_info = "SELECT * FROM `null_info`;"
+
+def get_data(cur):
+    row = cur.fetchall()
+    print(row)
+
+
+
 def drop_tables(con):
-    con.execute(drop_account)
+    # con.execute(drop_account)
     con.execute(drop_edge)
     con.execute(drop_hyp_malicious)
     con.execute(drop_hyp_same_person)
@@ -116,43 +116,122 @@ def drop_tables(con):
     con.execute(drop_null_info)
 
 
+def show_tables(cur):
+    print('>>>>>>>>>>>> tables')
+    cur.execute(show_edge)
+    for row in cur.fetchall():
+        print('show_edge')
+        print(row)
+    cur.execute(show_hyp_malicious)
+    for row in cur.fetchall():
+        print('show_hyp_malicious')
+        print(row)
+    cur.execute(show_hyp_same_person)
+    for row in cur.fetchall():
+        print('show_hyp_same_person')
+        print(row)
+    cur.execute(show_invoke)
+    for row in cur.fetchall():
+        print('show_invoke')
+        print(row)
+    cur.execute(show_is_eoa)
+    for row in cur.fetchall():
+        print('show_is_eoa')
+        print(row)
+    cur.execute(show_is_owner)
+    for row in cur.fetchall():
+        print('show_is_owner')
+        print(row)
+    cur.execute(show_is_smart_contract)
+    for row in cur.fetchall():
+        print('show_is_smart_contract')
+        print(row)
+    cur.execute(show_mapping)
+    for row in cur.fetchall():
+        print('show_mapping')
+        print(row)
+    cur.execute(show_net_diff_fact)
+    for row in cur.fetchall():
+        print('show_net_diff_fact')
+        print(row)
+    cur.execute(show_node)
+    for row in cur.fetchall():
+        print('show_node')
+        print(row)
+    cur.execute(show_null_info)
+    for row in cur.fetchall():
+        print('show_null_info')
+        print(row)
+    print('>>>>>>>>>>>>>>>>>')
+
 def main():
     df_0to499_NormalTransaction = pd.read_csv(dummy_tx_dataset)
     df_contractInfo = pd.read_csv(dummy_contract_dataset)
     df_contractInfo = df_contractInfo.drop(columns=['createdTimestamp', 'createdTransactionHash', 'creatorIsContract', 'createValue', 'creationCode', 'contractCode'])
     df_contractInfo.rename(columns={'createdBlockNumber': 'blockNumber'}, inplace=True)
-    assert_column_name(df_0to499_NormalTransaction, 'gasPrice')
-    assert_column_name(df_0to499_NormalTransaction, 'value')
+    evaluator = EvaluatorTesis(pd.read_csv(dummy_ground_truth))
 
+    print('df_contractInfo')
+    print(pd.util.hash_pandas_object(df_contractInfo))
+
+    # Drop useless columns
     df_0to499_NormalTransaction['value'] = df_0to499_NormalTransaction['value'].astype(float)
     df_0to499_NormalTransaction = df_0to499_NormalTransaction.drop(columns=['timestamp'])
     df_0to499_NormalTransaction = df_0to499_NormalTransaction[df_0to499_NormalTransaction["isError"] == 'None']
     df_0to499_NormalTransaction = df_0to499_NormalTransaction[df_0to499_NormalTransaction['to'] != 'None']
 
+    print('df_0to499_NormalTransaction')
+    print(pd.util.hash_pandas_object(df_0to499_NormalTransaction))
+
+    # Split in sub datasets
     df_tx_splitted = get_sub_datasets(df_0to499_NormalTransaction, sub_datasets)
     df_contractInfo_splitted = get_sub_datasets(df_contractInfo, sub_datasets)
 
+    print('df_tx_splitted')
+    print(pd.util.hash_pandas_object(df_tx_splitted))
+
+    print('df_contractInfo_splitted')
+    print(pd.util.hash_pandas_object(df_contractInfo_splitted))
+
     df_contract_creation = df_tx_splitted[df_tx_splitted['creates'] != 'None']
+
+    # Gets created contract addresses for is_contract
     df_contract_creation_addresses = df_contract_creation.filter(['creates', 'sd']).drop_duplicates().reset_index(drop=True)
     df_contract_creation_addresses.rename(columns={'creates': '2_address'}, inplace=True)
 
+    print('df_contract_creation_addresses')
+    print(pd.util.hash_pandas_object(df_contract_creation_addresses))
+
     df_account_from = df_tx_splitted.filter(['from', 'sd']).drop_duplicates(subset='from', keep='first').reset_index(drop=True)
     df_account_from.rename(columns={'from': '2_address'}, inplace=True)
-    df_account_to = df_tx_splitted.filter(['to', 'sd']).drop_duplicates(subset='to', keep='first').reset_index(
-        drop=True)
+    df_account_to = df_tx_splitted.filter(['to', 'sd']).drop_duplicates(subset='to', keep='first').reset_index(drop=True)
     df_account_to.rename(columns={'to': '2_address'}, inplace=True)
-    df_account = pd.concat([df_account_from, df_account_to, df_contract_creation_addresses], ignore_index=True).sort_values(by='sd').drop_duplicates(subset='2_address', keep='first')
+    df_account = pd.concat([df_account_from, df_account_to, df_contract_creation_addresses], ignore_index=True).sort_values(by='sd').drop_duplicates().reset_index(drop=True)
     df_account.rename(columns={'from': '2_address'}, inplace=True)
     df_account['1_primary_key'] = df_account.apply(lambda row: hash_row('account', row), axis=1)
 
+    print('df_account')
+    print(pd.util.hash_pandas_object(df_account))
+
     df_isContract = df_contractInfo_splitted.filter(['address', 'sd']).drop_duplicates().reset_index(drop=True)
     df_isContract.rename(columns={'address': '2_address'}, inplace=True)
-    df_isContract = pd.concat([df_isContract, df_contract_creation_addresses], ignore_index=True).sort_values(by='sd').drop_duplicates(subset='2_address', keep='first')
+    df_isContract = pd.concat([df_isContract, df_contract_creation_addresses], ignore_index=True).sort_values(by='sd').drop_duplicates(subset='2_address', keep='first').reset_index(drop=True)
     df_isContract['1_primary_key'] = df_isContract.apply(lambda row: hash_row('is_smart_contract', row), axis=1)
+
+    print('df_isContract')
+    print(pd.util.hash_pandas_object(df_isContract))
+
+    df_isEOA = df_account.loc[~df_account['2_address'].isin(df_isContract['2_address'])].drop_duplicates(subset='2_address', keep='first').reset_index(drop=True)
+
+    print('df_isEOA')
+    print(pd.util.hash_pandas_object(df_isEOA))
 
     df_invoke = df_tx_splitted[df_tx_splitted['callingFunction'] != '0x'].filter(['from', 'to', 'blockNumber', 'sd']).drop_duplicates().reset_index(drop=True)
     df_invoke.columns = ['2_address', '3_address', '4_block_number', 'sd']
     df_invoke['1_primary_key'] = df_invoke.apply(lambda row: hash_row('invoke', row), axis=1)
+
+    print('df_invoke')
+    print(pd.util.hash_pandas_object(df_invoke))
 
     df_is_owner = df_contract_creation.filter(['from', 'creates', 'sd']).drop_duplicates().reset_index(drop=True)
     df_contract_owner = df_contractInfo_splitted.filter(['creator','address', 'sd'])
@@ -160,6 +239,9 @@ def main():
     df_is_owner.columns = ['2_address', '3_address', 'sd']
     df_is_owner = pd.concat([df_is_owner, df_contract_owner]).drop_duplicates().reset_index(drop=True)
     df_is_owner['1_primary_key'] = df_is_owner.apply(lambda row: hash_row('is_owner', row), axis=1)
+
+    print('df_is_owner')
+    print(pd.util.hash_pandas_object(df_is_owner))
 
     # df_malicious = df_tx_splitted.filter(['from', 'blockNumber', 'sd']).drop_duplicates().reset_index(drop=True)
     # df_malicious.columns = ['2_address', '3_block_number', 'sd']
@@ -171,85 +253,100 @@ def main():
     df_malicious = pd.DataFrame(df_malicious_data, columns=['2_address', '3_block_number', 'sd'])
     df_malicious['1_primary_key'] = df_malicious.apply(lambda row: hash_row('hyp_malicious', row), axis=1)
 
+    print('df_malicious')
+    print(pd.util.hash_pandas_object(df_malicious))
+
     #   Atoms, TGDs & EGDs
     atom_account_a1 = Atom('account', [Variable('A1')])
-    atom_hyp_same_person = Atom('hyp_same_person', [Variable('A1'), Variable('A2')])
+    atom_hyp_same_person_b1 = Atom('hyp_same_person', [Variable('A1'), Variable('A2'), Variable('B1')])
+    atom_hyp_same_person_b2 = Atom('hyp_same_person', [Variable('A1'), Variable('A2'), Variable('B2')])
 
     atom_hyp_eoa_malicioso_a1 = Atom('hyp_malicious', [Variable('A1'), Variable('B')])
-    atom_hyp_eoa_malicioso_a2 = Atom('hyp_malicious', [Variable('A2'), Variable('B1')])
+    atom_hyp_eoa_malicioso_a2_b1 = Atom('hyp_malicious', [Variable('A2'), Variable('B1')])
+    atom_hyp_eoa_malicioso_a2_b = Atom('hyp_malicious', [Variable('A2'), Variable('B')])
     atom_is_eoa_a1 = Atom('is_eoa', [Variable('A1')])
     atom_is_owner_a1_c1 = Atom('is_owner', [Variable('A1'), Variable('C1')])
     atom_different_accounts_a1_a2 = Distinct(Variable('A1'), Variable('A2'))
-    atom_gre_block_numbers = GRE(Variable('B1'), Variable('B'))
+    atom_gre_block_numbers_b1_b = GRE(Variable('B1'), Variable('B'))
+    atom_gre_block_numbers_b_b1 = GRE(Variable('B'), Variable('B1'))
+    atom_gre_block_numbers_b1_b2 = GRE(Variable('B1'), Variable('B2'))
     atom_invoke_a2_c1 = Atom('invoke', [Variable('A2'), Variable('C1'), Variable('B1')])
     atom_invoke_a1_c1 = Atom('invoke', [Variable('A1'), Variable('C1'), Variable('B1')])
 
     atom_is_owner_a2_c1 = Atom('is_owner', [Variable('A2'), Variable('C1')])
 
-    # R6.1 hyp_malicioso(A1, B) & is_EOA(A1) & es_owner(A1, C1) & A1 != A2 & invoca(A2, C1, B1) & (B < B1) → hyp_misma_persona(A1, A2)
+    # R6.1 hyp_malicioso(A1, B) & is_EOA(A1) & es_owner(A1, C1) & A1 != A2 & invoca(A2, C1, B1) & (B < B1) → hyp_misma_persona(A1, A2, B1)
     tgd_invoke_account_rule = NetDERTGD(rule_id=1,
                                         ont_body=[atom_hyp_eoa_malicioso_a1, atom_is_eoa_a1, atom_is_owner_a1_c1,
-                                                  atom_invoke_a2_c1, atom_gre_block_numbers,
-                                                  atom_different_accounts_a1_a2], ont_head=[atom_hyp_same_person])
+                                                  atom_invoke_a2_c1, atom_gre_block_numbers_b1_b,
+                                                  atom_different_accounts_a1_a2], ont_head=[atom_hyp_same_person_b1])
 
     # R6.3 hyp_malicioso(A1, B) & invoca(A1, C1, B1) & (B < B1) & es_owner(A2, C1) & (A1 != A2)  →  hyp_malicioso(A2, B1)
-    tgd_invoke_malicious = NetDERTGD(rule_id=2,
+    tgd_invoke_malicious_rule = NetDERTGD(rule_id=2,
                                      ont_body=[atom_hyp_eoa_malicioso_a1, atom_invoke_a1_c1, atom_is_owner_a2_c1,
-                                               atom_gre_block_numbers,
-                                               atom_different_accounts_a1_a2], ont_head=[atom_hyp_eoa_malicioso_a2])
+                                               atom_gre_block_numbers_b1_b,
+                                               atom_different_accounts_a1_a2], ont_head=[atom_hyp_eoa_malicioso_a2_b1])
 
     atom_hyp_sc_malicioso_c1 = Atom('hyp_malicious', [Variable('C1'), Variable('B')])
-    atom_hyp_sc_malicioso_a1 = Atom('hyp_malicious', [Variable('A1'), Variable('B')])
+    atom_hyp_malicioso_a1 = Atom('hyp_malicious', [Variable('A1'), Variable('B')])
     atom_is_owner_a1_c2 = Atom('is_owner', [Variable('A1'), Variable('C2')])
     atom_invoke_a2_c2 = Atom('invoke', [Variable('A2'), Variable('C2'), Variable('B1')])
     atom_different_contracts_c1_c2 = Distinct(Variable('C1'), Variable('C2'))
 
-    # R6.2 hyp_malicioso(C1, B) & es_owner(A1, C1) & es_owner(A1, C2) & C1 != C2 & invoca(A2, C2, B1) & (B < B1) → hyp_misma_persona(A1, A2)
+    # R6.2 hyp_malicioso(C1, B) & es_owner(A1, C1) & es_owner(A1, C2) & C1 != C2 & invoca(A2, C2, B1) & (B < B1) → hyp_misma_persona(A1, A2, B1)
     tgd_invoke_contract_rule = NetDERTGD(rule_id=3,
                                          ont_body=[atom_hyp_sc_malicioso_c1,
                                                    atom_is_owner_a1_c1, atom_is_owner_a1_c2,
                                                    atom_invoke_a2_c2, atom_different_contracts_c1_c2,
-                                                   atom_gre_block_numbers], ont_head=[atom_hyp_same_person])
-
+                                                   atom_gre_block_numbers_b1_b], ont_head=[atom_hyp_same_person_b1])
+    # REVISAR ESTO
     # E A2 hyp_misma_persona(A1,A2)
     ont_head_existential = [Atom('account', [Variable('A2')]),
-                            Atom('hyp_same_person', [Variable('A1'), Variable('A2')])]
+                            Atom('hyp_same_person', [Variable('A1'), Variable('A2'), Variable('B')])]
 
-    # R6.4 account(A1) & hyp_malicioso(A1,B) → E A2 hyp_misma_persona(A1,A2)
+    # R6.4 hyp_malicioso(A1,B) → E A2 hyp_misma_persona(A1,A2, B)
     tgd_exist_same_account = NetDERTGD(rule_id=4,
                                        ont_body=[atom_account_a1, atom_hyp_eoa_malicioso_a1],
                                        ont_head=ont_head_existential)
 
     atom_invoke_a3_c2_b1 = Atom('invoke', [Variable('A3'), Variable('C2'), Variable('B1')])
-    atom_invoke_a3_c1_b = Atom('invoke', [Variable('A3'), Variable('C1'), Variable('B1')])
+    atom_invoke_a3_c1_b1 = Atom('invoke', [Variable('A3'), Variable('C1'), Variable('B1')])
 
-    # hyp_misma_persona(A1,A2) & hyp_malicioso(C1, B) & es_owner(A1,C1) & es_owner(A1,C2) & (C1 != C2) & invoca(A3,C2, B1) & (B < B1) → A2 = A3
+    # hyp_misma_persona(A1,A2, B2) & hyp_malicioso(C1, B) & es_owner(A1,C1) & es_owner(A1,C2) & invoca(A3,C2, B1) & (C1 != C2) & (B2 < B1) & (B < B1) → A2 = A3
     egd1 = NetDEREGD(rule_id=5,
-                     ont_body=[atom_hyp_same_person, atom_hyp_sc_malicioso_c1, atom_is_owner_a1_c1, atom_is_owner_a1_c2,
-                               atom_invoke_a3_c2_b1, atom_different_contracts_c1_c2, atom_gre_block_numbers],
+                     ont_body=[atom_hyp_same_person_b2, atom_hyp_sc_malicioso_c1, atom_is_owner_a1_c1, atom_is_owner_a1_c2,
+                               atom_invoke_a3_c2_b1, atom_different_contracts_c1_c2, atom_gre_block_numbers_b1_b2, atom_gre_block_numbers_b1_b],
                      head=[Variable('A2'), Variable('A3')])
 
-    # hyp_misma_persona(A1,A2) & invoca(A3,C1, B) & es_owner(A1,C1) → A2 = A3
-    egd2 = NetDEREGD(rule_id=6, ont_body=[atom_hyp_same_person, atom_invoke_a3_c1_b,
-                                          atom_is_owner_a1_c1],
+    # hyp_misma_persona(A1,A2,B2) & hyp_malicioso(A1, B) & invoca(A3,C1, B1) & es_owner(A1,C1) & (B2 < B1) & (B < B1) → A2 = A3
+    egd2 = NetDEREGD(rule_id=7, ont_body=[atom_hyp_same_person_b2, atom_hyp_malicioso_a1, atom_invoke_a3_c1_b1, atom_is_owner_a1_c1,
+                                          atom_different_contracts_c1_c2,
+                                          atom_gre_block_numbers_b1_b, atom_gre_block_numbers_b1_b2],
                      head=[Variable('A2'), Variable('A3')])
 
-    # hyp_misma_persona(A1,A2) & hyp_malicioso(A1, B) & invoca(A2,C1, B1) & es_owner(A1,C1) → A2 = A3
-    egd3 = NetDEREGD(rule_id=6, ont_body=[atom_hyp_same_person, atom_hyp_sc_malicioso_a1, atom_is_owner_a1_c1,
-                                          atom_is_owner_a1_c2, atom_invoke_a3_c2_b1, atom_different_contracts_c1_c2,
-                                          atom_gre_block_numbers],
+    # hyp_misma_persona(A1,A2, B2) & invoca(A3,C1, B1) & es_owner(A1,C1) & (B2 < B1) → A2 = A3
+    egd3 = NetDEREGD(rule_id=6, ont_body=[atom_hyp_same_person_b2, atom_invoke_a3_c1_b1,
+                                          atom_is_owner_a1_c1, atom_gre_block_numbers_b1_b2],
                      head=[Variable('A2'), Variable('A3')])
+
+    # hyp_malicious(A1,B) & hyp_same_person(A2,B1) & B1 > B -> hyp_malicious(A2, B1)
+    tgd_same_person_malicious_v1 = NetDERTGD(rule_id=8, ont_body=[atom_hyp_malicioso_a1, atom_hyp_same_person_b1, atom_gre_block_numbers_b1_b],
+                     ont_head=[atom_hyp_eoa_malicioso_a2_b1])
+
+    # hyp_malicious(A1,B) & hyp_same_person(A2,B1) & B > B1 -> hyp_malicious(A2, B)
+    tgd_same_person_malicious_v2 = NetDERTGD(rule_id=8, ont_body=[atom_hyp_malicioso_a1, atom_hyp_same_person_b1, atom_gre_block_numbers_b_b1],
+                                          ont_head=[atom_hyp_eoa_malicioso_a2_b])
 
     # kb = NetDERKB(data=set(), net_diff_graph=[], config_db=config_db_path, schema_path=schema_path,
     #               netder_tgds=[tgd_invoke_account_rule, tgd_invoke_malicious, tgd_invoke_contract_rule,
     #                            tgd_exist_same_account], netder_egds=[], netdiff_lrules=[], netdiff_grules=[])
     kb = NetDERKB(data=set(), net_diff_graph=[], config_db=config_db_path, schema_path=schema_path,
-                  netder_tgds=[tgd_invoke_account_rule, tgd_invoke_contract_rule], netder_egds=[], netdiff_lrules=[], netdiff_grules=[])
-
-    kb.get_connection()
+                  netder_tgds=[tgd_invoke_account_rule, tgd_invoke_contract_rule, tgd_same_person_malicious_v1, tgd_same_person_malicious_v2], netder_egds=[], netdiff_lrules=[], netdiff_grules=[])
 
     cur = kb.get_connection().cursor()
+
     drop_tables(cur)
+    kb.get_connection().commit()
 
     for sd in df_tx_splitted['sd'].unique():
         print('sd: ' + str(sd))
@@ -260,26 +357,42 @@ def main():
         #   is_smart_contract(Address)
         df_isContract_sd = df_isContract[df_isContract['sd'] == sd].filter(['1_primary_key', '2_address'])
 
+        print('df_isContract_sd')
+        print(pd.util.hash_pandas_object(df_isContract_sd))
+
         #   Is_EOA(Address)
-        df_isEOA_sd = df_account_sd.loc[~df_account_sd['2_address'].isin(df_isContract_sd['2_address'])]
+        df_isEOA_sd = df_isEOA[df_isEOA['sd'] == sd].filter(['1_primary_key', '2_address'])
+
+        print('df_isEOA_sd')
+        print(pd.util.hash_pandas_object(df_isEOA_sd))
 
         #   invoke(Address, Address, BlockNumber)
         df_invoke_sd = df_invoke[df_invoke['sd'] == sd].filter(['1_primary_key', '2_address', '3_address', '4_block_number'])
 
+        print('df_invoke_sd')
+        print(pd.util.hash_pandas_object(df_invoke_sd))
+
         #   Is_owner(Address, Address,)
         df_is_owner_sd = df_is_owner[df_is_owner['sd'] == sd].filter(['1_primary_key', '2_address', '3_address'])
+
+        print('df_is_owner_sd')
+        print(pd.util.hash_pandas_object(df_is_owner_sd))
 
         #   hyp_malicious
         df_malicious_sd = df_malicious[df_malicious['sd'] == sd].filter(['1_primary_key', '2_address', '3_block_number'])
 
+        print('df_malicious_sd')
+        print(pd.util.hash_pandas_object(df_malicious_sd))
+
         engine = create_engine("mariadb+mariadbconnector://user:@127.0.0.1:3306/test_tesis")
-        df_account_sd.to_sql('account', con=engine, index=False, if_exists='append')
+        # df_account_sd.to_sql('account', con=engine, index=False, if_exists='append')
         df_invoke_sd.to_sql('invoke', con=engine, index=False, if_exists='append')
         df_is_owner_sd.to_sql('is_owner', con=engine, index=False, if_exists='append')
         df_isContract_sd.to_sql('is_smart_contract', con=engine, index=False, if_exists='append')
         df_isEOA_sd.to_sql('is_eoa', con=engine, index=False, if_exists='append')
         df_malicious_sd.to_sql('hyp_malicious', con=engine, index=False, if_exists='append')
 
+        show_tables(cur)
 
         # query =
         # _h = RDBHomomorphism(kb)
@@ -288,16 +401,20 @@ def main():
 
         chase = NetDERChase(kb, tmax)
 
-        query1 = NetDERQuery(ont_cond=[atom_hyp_same_person], time=(tmax, tmax))
+        query1 = NetDERQuery(ont_cond=[atom_hyp_same_person_b1], time=(tmax, tmax))
+        query2 = NetDERQuery(ont_cond=[atom_hyp_malicioso_a1], time=(tmax, tmax))
+        actual_query = query2
         inicio_q = datetime.now()
-        answers = chase.answer_query(query1, 1)
+        answers = chase.answer_query(actual_query, 1)
         fin_q = datetime.now()
         print("NetDER Query")
-        print(query1)
+        print(actual_query)
         print('-----')
         for ans in answers:
             for key in ans.keys():
                 print("Variable", key, "instanciada con valor", ans[key].getValue())
+
+        print(evaluator.evaluate(answers, df_account_sd))
 
         print('NetDERChase.contador', NetDERChase.contador)
         print('tiempo de traduccion:', RDBHomomorphism.TRANSLATE_TIME)
@@ -305,6 +422,8 @@ def main():
         print('tiempo de ejecucion consulta SQL', RDBHomomorphism.HOMOMORPH_SQL_QUERY)
         print('tiempo para responder consulta:', (fin_q - inicio_q))
 
+    cur.close()
+    kb.get_connection().close()
     # coso = str(id) + ',' + str(hash(_hash(_from))) + ',' + str(hash(_hash(_to))) + ','
     #     print(hash(_hash(coso)))
     #     hash(_hash(coso))
