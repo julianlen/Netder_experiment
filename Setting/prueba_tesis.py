@@ -69,101 +69,6 @@ global fin_q
 global inicio_di
 global fin_din
 
-
-# drop_account = "TRUNCATE TABLE `account`;"
-drop_edge = "TRUNCATE TABLE `edge`;"
-drop_hyp_malicious = "TRUNCATE TABLE `hyp_malicious`; "
-drop_hyp_same_person = "TRUNCATE TABLE `hyp_same_person`; "
-drop_invoke = "TRUNCATE TABLE `invoke`; "
-drop_is_eoa = "TRUNCATE TABLE `is_eoa`; "
-drop_is_owner = "TRUNCATE TABLE `is_owner`; "
-drop_is_smart_contract = "TRUNCATE TABLE `is_smart_contract`; "
-drop_mapping = "TRUNCATE TABLE `mapping`; "
-drop_net_diff_fact = "TRUNCATE TABLE `net_diff_fact`; "
-drop_node = "TRUNCATE TABLE `node`; "
-drop_null_info = "TRUNCATE TABLE `null_info`;"
-
-show_edge = "SELECT * FROM `edge`;"
-show_hyp_malicious = "SELECT * FROM `hyp_malicious`; "
-show_hyp_same_person = "SELECT * FROM `hyp_same_person`; "
-show_invoke = "SELECT * FROM `invoke`; "
-show_is_eoa = "SELECT * FROM `is_eoa`; "
-show_is_owner = "SELECT * FROM `is_owner`; "
-show_is_smart_contract = "SELECT * FROM `is_smart_contract`; "
-show_mapping = "SELECT * FROM `mapping`; "
-show_net_diff_fact = "SELECT * FROM `net_diff_fact`; "
-show_node = "SELECT * FROM `node`; "
-show_null_info = "SELECT * FROM `null_info`;"
-
-def get_data(cur):
-    row = cur.fetchall()
-    print(row)
-
-
-
-def drop_tables(con):
-    # con.execute(drop_account)
-    con.execute(drop_edge)
-    con.execute(drop_hyp_malicious)
-    con.execute(drop_hyp_same_person)
-    con.execute(drop_invoke)
-    con.execute(drop_is_eoa)
-    con.execute(drop_is_owner)
-    con.execute(drop_is_smart_contract)
-    con.execute(drop_mapping)
-    con.execute(drop_net_diff_fact)
-    con.execute(drop_node)
-    con.execute(drop_null_info)
-
-
-def show_tables(cur):
-    print('>>>>>>>>>>>> tables')
-    cur.execute(show_edge)
-    for row in cur.fetchall():
-        print('show_edge')
-        print(row)
-    cur.execute(show_hyp_malicious)
-    for row in cur.fetchall():
-        print('show_hyp_malicious')
-        print(row)
-    cur.execute(show_hyp_same_person)
-    for row in cur.fetchall():
-        print('show_hyp_same_person')
-        print(row)
-    cur.execute(show_invoke)
-    for row in cur.fetchall():
-        print('show_invoke')
-        print(row)
-    cur.execute(show_is_eoa)
-    for row in cur.fetchall():
-        print('show_is_eoa')
-        print(row)
-    cur.execute(show_is_owner)
-    for row in cur.fetchall():
-        print('show_is_owner')
-        print(row)
-    cur.execute(show_is_smart_contract)
-    for row in cur.fetchall():
-        print('show_is_smart_contract')
-        print(row)
-    cur.execute(show_mapping)
-    for row in cur.fetchall():
-        print('show_mapping')
-        print(row)
-    cur.execute(show_net_diff_fact)
-    for row in cur.fetchall():
-        print('show_net_diff_fact')
-        print(row)
-    cur.execute(show_node)
-    for row in cur.fetchall():
-        print('show_node')
-        print(row)
-    cur.execute(show_null_info)
-    for row in cur.fetchall():
-        print('show_null_info')
-        print(row)
-    print('>>>>>>>>>>>>>>>>>')
-
 def main():
     df_0to499_NormalTransaction = pd.read_csv(dummy_tx_dataset)
     df_contractInfo = pd.read_csv(dummy_contract_dataset)
@@ -171,36 +76,21 @@ def main():
     df_contractInfo.rename(columns={'createdBlockNumber': 'blockNumber'}, inplace=True)
     evaluator = EvaluatorTesis(pd.read_csv(dummy_ground_truth))
 
-    print('df_contractInfo')
-    print(pd.util.hash_pandas_object(df_contractInfo))
-
     # Drop useless columns
     df_0to499_NormalTransaction['value'] = df_0to499_NormalTransaction['value'].astype(float)
     df_0to499_NormalTransaction = df_0to499_NormalTransaction.drop(columns=['timestamp'])
     df_0to499_NormalTransaction = df_0to499_NormalTransaction[df_0to499_NormalTransaction["isError"] == 'None']
     df_0to499_NormalTransaction = df_0to499_NormalTransaction[df_0to499_NormalTransaction['to'] != 'None']
 
-    print('df_0to499_NormalTransaction')
-    print(pd.util.hash_pandas_object(df_0to499_NormalTransaction))
-
     # Split in sub datasets
     df_tx_splitted = get_sub_datasets(df_0to499_NormalTransaction, sub_datasets)
     df_contractInfo_splitted = get_sub_datasets(df_contractInfo, sub_datasets)
-
-    print('df_tx_splitted')
-    print(pd.util.hash_pandas_object(df_tx_splitted))
-
-    print('df_contractInfo_splitted')
-    print(pd.util.hash_pandas_object(df_contractInfo_splitted))
 
     df_contract_creation = df_tx_splitted[df_tx_splitted['creates'] != 'None']
 
     # Gets created contract addresses for is_contract
     df_contract_creation_addresses = df_contract_creation.filter(['creates', 'sd']).drop_duplicates().reset_index(drop=True)
     df_contract_creation_addresses.rename(columns={'creates': '2_address'}, inplace=True)
-
-    print('df_contract_creation_addresses')
-    print(pd.util.hash_pandas_object(df_contract_creation_addresses))
 
     df_account_from = df_tx_splitted.filter(['from', 'sd']).drop_duplicates(subset='from', keep='first').reset_index(drop=True)
     df_account_from.rename(columns={'from': '2_address'}, inplace=True)
@@ -210,28 +100,16 @@ def main():
     df_account.rename(columns={'from': '2_address'}, inplace=True)
     df_account['1_primary_key'] = df_account.apply(lambda row: hash_row('account', row), axis=1)
 
-    print('df_account')
-    print(pd.util.hash_pandas_object(df_account))
-
     df_isContract = df_contractInfo_splitted.filter(['address', 'sd']).drop_duplicates().reset_index(drop=True)
     df_isContract.rename(columns={'address': '2_address'}, inplace=True)
     df_isContract = pd.concat([df_isContract, df_contract_creation_addresses], ignore_index=True).sort_values(by='sd').drop_duplicates(subset='2_address', keep='first').reset_index(drop=True)
     df_isContract['1_primary_key'] = df_isContract.apply(lambda row: hash_row('is_smart_contract', row), axis=1)
 
-    print('df_isContract')
-    print(pd.util.hash_pandas_object(df_isContract))
-
     df_isEOA = df_account.loc[~df_account['2_address'].isin(df_isContract['2_address'])].drop_duplicates(subset='2_address', keep='first').reset_index(drop=True)
-
-    print('df_isEOA')
-    print(pd.util.hash_pandas_object(df_isEOA))
 
     df_invoke = df_tx_splitted[df_tx_splitted['callingFunction'] != '0x'].filter(['from', 'to', 'blockNumber', 'sd']).drop_duplicates().reset_index(drop=True)
     df_invoke.columns = ['2_address', '3_address', '4_block_number', 'sd']
     df_invoke['1_primary_key'] = df_invoke.apply(lambda row: hash_row('invoke', row), axis=1)
-
-    print('df_invoke')
-    print(pd.util.hash_pandas_object(df_invoke))
 
     df_is_owner = df_contract_creation.filter(['from', 'creates', 'sd']).drop_duplicates().reset_index(drop=True)
     df_contract_owner = df_contractInfo_splitted.filter(['creator','address', 'sd'])
@@ -239,9 +117,6 @@ def main():
     df_is_owner.columns = ['2_address', '3_address', 'sd']
     df_is_owner = pd.concat([df_is_owner, df_contract_owner]).drop_duplicates().reset_index(drop=True)
     df_is_owner['1_primary_key'] = df_is_owner.apply(lambda row: hash_row('is_owner', row), axis=1)
-
-    print('df_is_owner')
-    print(pd.util.hash_pandas_object(df_is_owner))
 
     # df_malicious = df_tx_splitted.filter(['from', 'blockNumber', 'sd']).drop_duplicates().reset_index(drop=True)
     # df_malicious.columns = ['2_address', '3_block_number', 'sd']
@@ -252,9 +127,6 @@ def main():
     }
     df_malicious = pd.DataFrame(df_malicious_data, columns=['2_address', '3_block_number', 'sd'])
     df_malicious['1_primary_key'] = df_malicious.apply(lambda row: hash_row('hyp_malicious', row), axis=1)
-
-    print('df_malicious')
-    print(pd.util.hash_pandas_object(df_malicious))
 
     #   Atoms, TGDs & EGDs
     atom_account_a1 = Atom('account', [Variable('A1')])
@@ -344,12 +216,10 @@ def main():
                   netder_tgds=[tgd_invoke_account_rule, tgd_invoke_contract_rule, tgd_same_person_malicious_v1, tgd_same_person_malicious_v2], netder_egds=[], netdiff_lrules=[], netdiff_grules=[])
 
     cur = kb.get_connection().cursor()
-
-    drop_tables(cur)
     kb.get_connection().commit()
 
     for sd in df_tx_splitted['sd'].unique():
-        print('sd: ' + str(sd))
+        print('\nsd: ' + str(sd))
 
         #   Account(Address)
         df_account_sd = df_account[df_account['sd'] == sd].filter(['1_primary_key', '2_address'])
@@ -357,32 +227,17 @@ def main():
         #   is_smart_contract(Address)
         df_isContract_sd = df_isContract[df_isContract['sd'] == sd].filter(['1_primary_key', '2_address'])
 
-        print('df_isContract_sd')
-        print(pd.util.hash_pandas_object(df_isContract_sd))
-
         #   Is_EOA(Address)
         df_isEOA_sd = df_isEOA[df_isEOA['sd'] == sd].filter(['1_primary_key', '2_address'])
-
-        print('df_isEOA_sd')
-        print(pd.util.hash_pandas_object(df_isEOA_sd))
 
         #   invoke(Address, Address, BlockNumber)
         df_invoke_sd = df_invoke[df_invoke['sd'] == sd].filter(['1_primary_key', '2_address', '3_address', '4_block_number'])
 
-        print('df_invoke_sd')
-        print(pd.util.hash_pandas_object(df_invoke_sd))
-
         #   Is_owner(Address, Address,)
         df_is_owner_sd = df_is_owner[df_is_owner['sd'] == sd].filter(['1_primary_key', '2_address', '3_address'])
 
-        print('df_is_owner_sd')
-        print(pd.util.hash_pandas_object(df_is_owner_sd))
-
         #   hyp_malicious
         df_malicious_sd = df_malicious[df_malicious['sd'] == sd].filter(['1_primary_key', '2_address', '3_block_number'])
-
-        print('df_malicious_sd')
-        print(pd.util.hash_pandas_object(df_malicious_sd))
 
         engine = create_engine("mariadb+mariadbconnector://user:@127.0.0.1:3306/test_tesis")
         # df_account_sd.to_sql('account', con=engine, index=False, if_exists='append')
@@ -391,8 +246,6 @@ def main():
         df_isContract_sd.to_sql('is_smart_contract', con=engine, index=False, if_exists='append')
         df_isEOA_sd.to_sql('is_eoa', con=engine, index=False, if_exists='append')
         df_malicious_sd.to_sql('hyp_malicious', con=engine, index=False, if_exists='append')
-
-        show_tables(cur)
 
         # query =
         # _h = RDBHomomorphism(kb)

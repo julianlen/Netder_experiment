@@ -25,7 +25,6 @@ class OntQuery:
 		variables = self.get_variables()
 		exist_var = self.get_exist_var()
 		for var in variables:
-			print('>>>>>> id: ' + var.getId())
 			if not (var in exist_var):
 				result.append(copy.deepcopy(var))
 		return result

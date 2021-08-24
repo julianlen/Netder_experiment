@@ -53,14 +53,10 @@ class NetDERKB:
 		self._netder_tgds = netder_tgds
 		self._netder_egds = netder_egds
 		aux_rules = self._netder_tgds + self._netder_egds
-		print('>>>>>>>>>>>>>>> aux_rules')
-		print(aux_rules)
 		counter = 0
 		for rule in aux_rules:
 			rule.set_id(counter)
 			counter = counter + 1
-			print('>>>>>>>>>>>>>>> counter')
-			print(counter)
 		# self._netdiff_lrules = netdiff_lrules
 		# self._netdiff_grules = netdiff_grules
 		# self._net_diff_graph = net_diff_graph
@@ -105,13 +101,9 @@ class NetDERKB:
 		for table_name in self._tables.keys():
 			columns = self.get_columns(table_name)
 			query = "SELECT "+ columns[0] + " FROM " + table_name + ";"
-			print('>>>>>>>>>>>>>> query_load_tuples_id')
-			print(query)
 			cur.execute(query)
 			data = cur.fetchall()
 			for row in data:
-				print('>>>>>>>>>>>>>>>>> load_tuples_id')
-				print(row)
 				self._tuples_id.add(row[0])
 
 
@@ -139,14 +131,10 @@ class NetDERKB:
 		#filtrar los atomos que ya se encuentran en la base de datos
 		filtered_atoms = []
 		for atom in atoms:
-			print('>>>>>>>>> atom_add_ont_data')
-			print(atom)
 			#si el atomo no se encuentra en la base de datos significa que puede ser agregado
 			if not self.exists(con, atom):
 				filtered_atoms.append(atom)
 				self._tuples_id.add(str(hash(atom)))
-				print('>>>>>>>>>>>>>> hash')
-				print(str(hash(atom)))
 
 		success = None
 		if len(filtered_atoms) > 0:
@@ -173,8 +161,6 @@ class NetDERKB:
 				sql_queries_part[key] = sql_queries_part[key][:-2]
 				sql_queries_part[key] = sql_queries_part[key] + ')'
 				sql_query = sql_query_ini + '`' + key + '`' + sql_queries_part[key]
-				print('>>>>>>>>>>>> sql_query_netderkb')
-				print(sql_query)
 				cur.execute(sql_query)
 			success = True
 		else:

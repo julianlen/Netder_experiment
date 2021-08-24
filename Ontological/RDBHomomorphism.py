@@ -98,21 +98,13 @@ class RDBHomomorphism(Homomorphism):
 		exist_var = []
 		for atom in atoms:
 			pk_variable = atom.get_pk_variable()
-			print('>>>>>> pk_variable')
-			print(str(pk_variable))
 			if not pk_variable is None:
 				exist_var.append(pk_variable)
 		query = OntQuery(exist_var = exist_var, ont_cond = atoms)
 		
 		sql_query = self.to_SQL(query)
 
-		print('>>>>>>>>>>> sql_query')
-		print(sql_query)
-
 		var_list = query.get_free_variables()
-
-		print('>>>>>>>>>>>>>> var_list')
-		print(var_list)
 
 		con = self._netder_kb.get_connection()
 		cur = con.cursor()
@@ -122,8 +114,6 @@ class RDBHomomorphism(Homomorphism):
 		fin_sql = datetime.now()
 		RDBHomomorphism.HOMOMORPH_SQL_QUERY += (fin_sql - inicio_sql)
 		data = cur.fetchall()
-		print('>>>>>>>>>>>>>> data')
-		print(data)
 
 		con.commit()
 		con.close()

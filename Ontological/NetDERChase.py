@@ -29,8 +29,6 @@ class NetDERChase:
 		mapping_query = "SELECT * FROM " + RDBHomomorphism.NAME + " WHERE " + RDBHomomorphism.PK + "='" + str(key_mapping) + "';"
 		cur.execute(mapping_query)
 		data = cur.fetchall()
-		print('>>>>>>>>>>>>>> data')
-		print(data)
 		result = len(data) > 0
 		return result
 
@@ -46,12 +44,8 @@ class NetDERChase:
 		mapping_key = str(mapping_key).encode('utf-8')
 		mapping_key = int(hashlib.sha1(mapping_key).hexdigest(), 16)
 		#consulta para verificar que la clave del homomorfismo aun no esta en la base de datos
-		print('>>>>>>>>> _Save:')
-		print("SELECT * FROM " + RDBHomomorphism.NAME + " WHERE " + pk + "='" + str(mapping_key) + "';")
 		cur.execute("SELECT * FROM " + RDBHomomorphism.NAME + " WHERE " + pk + "='" + str(mapping_key) + "';")
 		data = cur.fetchall()
-		print(">>>>>>>>>>>>>>>>>>> data_save")
-		print(data)
 		if not (len(data) > 0) :
 			mapping_insert_partial = mapping_insert_partial + "('" + str(mapping_key) + "'),"
 
@@ -59,8 +53,6 @@ class NetDERChase:
 			#saco la coma demas y agrego un punto y coma
 			mapping_insert_partial = mapping_insert_partial[:-1] + ";"
 			mapping_insert = mapping_insert_ini + mapping_insert_partial
-			print('>>>>>>>>>>>>>>>>> data_save_comma')
-			print(mapping_insert)
 			cur.execute(mapping_insert)
 
 
@@ -68,8 +60,6 @@ class NetDERChase:
 	def _get_atoms_mapping(self, atoms):
 		#se busca mapaer los atomos "atoms" en la base de datos a traves de un homomorfismo h
 		result = self._h.get_atoms_mapping(atoms)
-		print('>>>>>>>>>>> result')
-		print(result)
 		return result
 
 
@@ -141,8 +131,6 @@ class NetDERChase:
 				for key in body_mapping.keys():
 					if not self._exists(connection, str(tgd.get_id()) + str(key)):
 						self._save(connection, str(tgd.get_id()) + str(key))
-						print('>>>>>>>>>>>>>>>>>>>>>> tgd_id')
-						print(str(tgd.get_id()) + str(key))
 						#se aplica cada mapeo disponible en la cabeza de la tgd
 						#se obtiene conocimiento ontologico y de red
 						#"net_head_comp" almacena una copia de la parte de red de la cabeza de la tgd relativa a los componentes del grafo (nodos o arcos)
@@ -155,8 +143,6 @@ class NetDERChase:
 						
 						#se aplica cada mapeo a cada atomo de la parte ontologica de la tgd
 						for atom in cloned_ont_head:
-							print('>>>>>>>>>>>>>>>> atom')
-							print(atom)
 							atom.map(body_mapping[key])
 						#se aplica cada mapeo a cada componente del grafo de la parte de red de la cabeza de la tgd
 						# for comp in net_head_comp:
