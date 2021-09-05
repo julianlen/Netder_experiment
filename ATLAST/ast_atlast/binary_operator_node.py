@@ -20,6 +20,7 @@ class BinaryOperatorNode(Node):
   OR = 7
   IMPLIES = 8
   IFF = 9
+  PLUS = 10
 
   op_map = {   0: 'EQ',
                1: 'LT',
@@ -30,7 +31,8 @@ class BinaryOperatorNode(Node):
                6: 'AND',
                7: 'OR',
                8: 'IMPLIES',
-               9: 'IFF' }
+               9: 'IFF',
+               10: 'PLUS'}
   # Takes two nodes representing the LHS and the RHS of the formula.
   def __init__(self, lineNo, position, left, right, op):
     super(BinaryOperatorNode, self).__init__(lineNo, position)

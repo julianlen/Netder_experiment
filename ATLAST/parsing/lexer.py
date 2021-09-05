@@ -24,6 +24,7 @@ class TokenEnum(object):
   IDENTIFIER = 'IDENTIFIER'
   CONSTANT = 'CONSTANT'
   STRINGLIT = 'STRINGLIT'
+  PLUS = 'PLUS'
 
 tokens = (
   TokenEnum.FORALL,
@@ -46,7 +47,8 @@ tokens = (
   TokenEnum.NOT,
   TokenEnum.IDENTIFIER,
   TokenEnum.CONSTANT,
-  TokenEnum.STRINGLIT
+  TokenEnum.STRINGLIT,
+  TokenEnum.PLUS
 )
 
 t_FORALL = u'\u2200'
@@ -67,12 +69,14 @@ t_LBRACKET = '\('
 t_RBRACKET = '\)'
 t_COMMA = ','
 t_NOT = u'\u00AC'
+t_PLUS = r'\+'
 
 digit = r'([0-9])'
 nondigit = r'([_A-Za-z])'
 
 # Literals are passed straight through as their own token
-literals = '+-*/'
+#literals = '+-*/'
+literals = '-*/'
 # Spaces are taken out completely
 t_ignore = ' '
 

@@ -19,7 +19,7 @@ class Distinct(Atom):
 		return {}
 
 	def __str__(self):
-		return self._terms[0].getId() + '≠' + self._terms[1].getId()
+		return str(self._terms[0]) + ' ≠ ' + str(self._terms[1])
 
 	def get_variables(self):
 		result = []

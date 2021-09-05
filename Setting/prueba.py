@@ -25,6 +25,7 @@ from Ontological.Atom import Atom
 from Ontological.GRE import GRE
 from Ontological.Distinct import Distinct
 from Ontological.Equal import Equal
+from Ontological.ExpressionPlus import ExpressionPlus
 from Ontological.Variable import Variable
 from Ontological.Constant import Constant
 from Ontological.Homomorphism import Homomorphism
@@ -293,12 +294,33 @@ def test2():
 	print('NetDERChase.contador', NetDERChase.contador)
 	print('NetDERKB.counter_graph', NetDERKB.counter_graph)
 
+inicio_kb = 0
+fin_kb = 0
+inicio_q = 0
+fin_q = 0
+
 inicio = datetime.now()
 
 #test1()
-test2()
+#test2()
+nodes = [NetDiffNode('0'), NetDiffNode('1'), NetDiffNode('2'), NetDiffNode('3')]
+edges = [NetDiffEdge('0', '1'), NetDiffEdge('0', '2'), NetDiffEdge('0', '3'), NetDiffEdge('2', '3')]
+
+graph = NetDiffGraph('graph', nodes, edges)
+kb = NetDERKB(data = set(), net_diff_graph = graph, config_db = config_db_path, schema_path = schema_path, netder_tgds = [], netder_egds = [], netdiff_lrules = [], netdiff_grules = [])
+h = RDBHomomorphism(kb)
+exp = ExpressionPlus(terms = [Variable('Y'), Constant('1')])
+atom_equal = Equal(Variable('X'), exp)
+tmax = 2
+query1 = NetDERQuery(exist_var = [], ont_cond = [Atom('hyp_is_resp', [Variable('X'), Variable('Y')]), atom_equal], time = (tmax, tmax))
+print('exp', str(exp))
+print('atom_equal', atom_equal)
+print('str(query1)', str(query1))
+print('traduccion', h.to_SQL(str(query1)))
+
 
 fin = datetime.now()
+
 
 print('tiempo total:', (fin - inicio))
 print('tiempo de traduccion:', RDBHomomorphism.TRANSLATE_TIME)

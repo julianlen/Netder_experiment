@@ -108,27 +108,54 @@ def p_atomic_formula_predicate(p):
   p[0] = ast.PredicateNode(lineNo, pos, p[1], p[3])
 
 def p_atomic_formula_eq(p):
-  'atomicFormula : term EQ term'
+  '''atomicFormula : expression EQ expression
+                   | expression EQ term
+                   | term EQ expression
+                   | term EQ term'''
   lineNo = p.lineno(1)
   pos = p.lexpos(1) + 1
   p[0] = ast.BinaryOperatorNode(lineNo, pos, p[1], p[3], \
                                 ast.BinaryOperatorNode.EQ)
 
+def p_expression_plus(p):
+  'expression : expression PLUS term'
+  lineNo = p.lineno(1)
+  pos = p.lexpos(1) + 1
+
+  p[0] = ast.PlusNode(lineNo, pos, p[1], p[3])
+
+def p_atomic_expression_plus(p):
+  'expression : term PLUS term'
+  lineNo = p.lineno(1)
+  pos = p.lexpos(1) + 1
+
+  p[0] = ast.PlusNode(lineNo, pos, p[1], p[3])
+
 def p_atomic_formula_lt(p):
-  'atomicFormula : term LT term'
+  '''atomicFormula : expression LT expression
+                   | expression LT term
+                   | term LT expression
+                   | term LT term'''
   lineNo = p.lineno(1)
   pos = p.lexpos(1) + 1
   p[0] = ast.BinaryOperatorNode(lineNo, pos, p[1], p[3], \
                                 ast.BinaryOperatorNode.LT)
 
 def p_atomic_formula_lte(p):
-  'atomicFormula : term LTE term'
+  '''atomicFormula : expression LTE expression
+                   | expression LTE term
+                   | term LTE expression
+                   | term LTE term'''
   lineNo = p.lineno(1)
   pos = p.lexpos(1) + 1
   p[0] = ast.BinaryOperatorNode(lineNo, pos, p[1], p[3], \
                                 ast.BinaryOperatorNode.LTE)
 
 def p_atomic_formula_gt(p):
+  '''atomicFormula : expression GT expression
+                   | expression GT term
+                   | term GT expression
+                   | term GT term'''
   'atomicFormula : term GT term'
   lineNo = p.lineno(1)
   pos = p.lexpos(1) + 1
@@ -136,18 +163,27 @@ def p_atomic_formula_gt(p):
                                 ast.BinaryOperatorNode.GT)
 
 def p_atomic_formula_gte(p):
-  'atomicFormula : term GTE term'
+  '''atomicFormula : expression GTE expression
+                   | expression GTE term
+                   | term GTE expression
+                   | term GTE term'''
   lineNo = p.lineno(1)
   pos = p.lexpos(1) + 1
   p[0] = ast.BinaryOperatorNode(lineNo, pos, p[1], p[3], \
                                 ast.BinaryOperatorNode.GTE)
 
 def p_atomic_formula_neq(p):
-  'atomicFormula : term NEQ term'
+  '''atomicFormula : expression NEQ expression
+                   | expression NEQ term
+                   | term NEQ expression
+                   | term NEQ term'''
   lineNo = p.lineno(1)
   pos = p.lexpos(1) + 1
   p[0] = ast.BinaryOperatorNode(lineNo, pos, p[1], p[3], \
                                 ast.BinaryOperatorNode.NEQ)
+
+
+
 
 # Term list grammar
 
@@ -199,7 +235,6 @@ def p_error(p):
     errors.append(pe.ParserEOIException())
   else:
     pos = getPosition(p.lexer) - len(p.value)
-    #errors.append(pe.ParserTokenException(p.lineno, pos, unicode(p.value)))
     errors.append(pe.ParserTokenException(p.lineno, pos, str(p.value)))
 
 def parse_input(input):

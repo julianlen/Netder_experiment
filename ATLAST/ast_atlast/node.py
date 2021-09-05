@@ -36,6 +36,9 @@ class Node(object):
   def setChildren(self, children):
     self._children = children
 
+  def getSymbolTable(self):
+    return self._symTable
+
   def setSymbolTable(self, symbolTable):
     self._symTable = symbolTable
 

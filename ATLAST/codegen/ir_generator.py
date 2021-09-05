@@ -45,6 +45,8 @@ class IRGenerator:
     left_node = self.popNode()
     right_ir = self.popIR()
     left_ir = self.popIR()
+    #print('\tLeft node: ' + str(left_node))
+    #print('\tRight node: ' + str(right_node))
     #print('\tLeft IR: ' + str(left_ir))
     #print('\tRight IR: ' + str(right_ir))
 
@@ -122,7 +124,7 @@ class IRGenerator:
               }
             self.pushNode(state)
             #print('Generated IR : ' + str(left_ir))
- #     #print "\tAnd(",left_node,",",right_node,")"
+ #     print "\tAnd(",left_node,",",right_node,")"
             #print("*** IR Generator:  End AndNode ***")
 
             return
@@ -236,8 +238,8 @@ class IRGenerator:
             prev_constraints))
         self.pushIR(outer_ir)
         self.pushNode(result_node)
-        #print(outer_ir)
- #     #print "\tAnd(",left_node,",",right_node,")"
+       # print(outer_ir)
+ #     print "\tAnd(",left_node,",",right_node,")"
     #print("*** IR Generator:  End AndNode ***")
 
   @v.when(ast.NotNode)
@@ -355,7 +357,7 @@ class IRGenerator:
     elements = keys[:]
     elements.extend(binding_values)
     #keys.extend(binding_values)
-    ##print '\t#########',keys
+    #print '\t#########',keys
     for i in reversed(range(0, len(elements))):
       attr = elements[i]
       child = self.popNode()
@@ -396,8 +398,8 @@ class IRGenerator:
         else:
           ir.setConstraintTree(AndConstraint(prev_constraints, new_constraint))
       else:
+        #print('\tConstantNode')
         pass
-      #print('\tConstantNode')
       # Lazy instantiation of merged_ir.
       if merged_ir is None:
         merged_ir = ir
@@ -424,6 +426,7 @@ class IRGenerator:
     self.pushNode(state)
     #print('\t' + str(merged_ir))
     #print('*** IR Generator: End PredicateNode ***')
+
 
   @v.when(ast.BinaryOperatorNode)
   def visit(self, node):
@@ -464,29 +467,31 @@ class IRGenerator:
           prev_constraints))
 
     elif one_variable_one_not or (both_variables and op != Constraint.EQ):
-      var_child = self.getVariableNode(left_child, right_child)
-      other_child = right_child if var_child == left_child else left_child
+        var_child = self.getVariableNode(left_child, right_child)
+        other_child = right_child if var_child == left_child else left_child
 
-      #print('\t\t\t' + str(var_child['node'].getBoundValue().__class__))
-      constraint_var = var_child['node'].getBoundValue()
-      if other_child['type'] == 'variable':
-        constraint_other = VariableNode(other_child['node'].getIdentifier())
-      elif other_child['type'] == 'string_lit':
-        constraint_other = StringLiteral(other_child['node'].getValue())
-      elif other_child['type'] == 'constant':
-        constraint_other = Constant(other_child['node'].getValue())
+        #print('\t\t\t' + str(var_child['node'].getBoundValue().__class__))
+        constraint_var = var_child['node'].getBoundValue()
+        
+        if other_child['type'] == 'variable':
+          constraint_other = VariableNode(other_child['node'].getIdentifier())
+        elif other_child['type'] == 'string_lit':
+          constraint_other = StringLiteral(other_child['node'].getValue())
+        elif other_child['type'] == 'constant':
+          constraint_other = Constant(other_child['node'].getValue())
 
-      #print('\tAdding constraint')
-      if var_child == left_child:
-        constraint = Constraint(op, constraint_var, constraint_other)
-      else:
-        constraint = Constraint(op, constraint_other, constraint_var)
+        #print('\tAdding constraint')
+        if var_child == left_child:
+          constraint = Constraint(op, constraint_var, constraint_other)
+        else:
+          constraint = Constraint(op, constraint_other, constraint_var)
 
-      # Add it to the IR
-      if prev_constraints is None:
-        left_ir.setConstraintTree(constraint)
-      else:
-        left_ir.setConstraintTree(AndConstraint(prev_constraints, constraint))
+        # Add it to the IR
+        if prev_constraints is None:
+          left_ir.setConstraintTree(constraint)
+        else:
+          left_ir.setConstraintTree(AndConstraint(prev_constraints, constraint))
+        
 
     # TODO handle case of neither child being a variable node - reduce to T/F?
     else:
@@ -515,12 +520,14 @@ class IRGenerator:
     else:
       return right
 
+
+
   @v.when(ast.BooleanNode)
   def visit(self, node):
-    pass
     # TODO Should be the same as the below nodes
     #print(' *** IR Generator: Begin BooleanNode - Unimplemented ***')
-    #print(' *** IR Generator: End BooleanNode - Unimplemented ***')   
+    #print(' *** IR Generator: End BooleanNode - Unimplemented ***')
+    pass
 
   # TODO Refactor replicated code here...
   @v.when(ast.StringLitNode)
@@ -542,6 +549,7 @@ class IRGenerator:
     self.pushNode(state)
     self.pushIR(ir)
     #print(' *** IR Generator: End ConstantNode ***')
+  
   # TODO ...and here.
   @v.when(ast.VariableNode)
   def visit(self, node):
@@ -552,6 +560,26 @@ class IRGenerator:
     #print("\tSeen Variable: " + str(node.getIdentifier()))
     self.pushIR(ir)
     #print('*** IR Generator: End VariableNode ***')
+
+  @v.when(ast.PlusNode)
+  def visit(self, node):
+    #print('*** IR Generator: Begin PLusNode ***')
+    ir = IR()
+    left = node.getLeft()
+    right = node.getRight()
+    # Pop relevant objects off the stack
+    right_child = self.popNode()
+    left_child = self.popNode()
+    right_ir = self.popIR()
+    left_ir = self.popIR()
+
+    new_node = ast.ConstantNode(node.getLineNo(), node.getPosition(), node.getBoundValue())
+    new_node.generateSymbolTable(node.getSymbolTable())
+
+    state = {'type' : 'constant', 'node' : new_node}
+    self.pushNode(state)
+    self.pushIR(ir)
+    #print('*** IR Generator: End PLusNode ***')  
 
 
 # Stack manipulating functions
@@ -598,8 +626,8 @@ class IRGenerator:
             else:
               join_constraints = AndConstraint(join_constraints, constraint)
         else:
-          pass
           #print("""\ta mixture of variables and constants found, add some constraints""")
+          pass
     #print('\t\t\tJoin constraints: ' + str(join_constraints))
     return join_constraints
 
