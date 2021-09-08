@@ -92,15 +92,19 @@ def main():
     df_contract_creation_addresses = df_contract_creation.filter(['creates', 'sd']).drop_duplicates().reset_index(drop=True)
     df_contract_creation_addresses.rename(columns={'creates': '2_address'}, inplace=True)
 
-    df_account_from = df_tx_splitted.filter(['from', 'sd']).drop_duplicates(subset='from', keep='first').reset_index(drop=True)
+    df_account_contract_info = df_contractInfo_splitted.filter(['address', 'sd']).rename(columns={'address': '2_address'})
+
+    df_account_from = df_tx_splitted.filter(['from', 'sd']) # .drop_duplicates(subset='from', keep='first').reset_index(drop=True)
     df_account_from.rename(columns={'from': '2_address'}, inplace=True)
-    df_account_to = df_tx_splitted.filter(['to', 'sd']).drop_duplicates(subset='to', keep='first').reset_index(drop=True)
+    df_account_to = df_tx_splitted.filter(['to', 'sd']) # .drop_duplicates(subset='to', keep='first').reset_index(drop=True)
     df_account_to.rename(columns={'to': '2_address'}, inplace=True)
-    df_account = pd.concat([df_account_from, df_account_to, df_contract_creation_addresses], ignore_index=True).sort_values(by='sd').drop_duplicates().reset_index(drop=True)
+    df_account = pd.concat([df_account_from, df_account_to, df_contract_creation_addresses, df_account_contract_info], ignore_index=True).drop_duplicates().reset_index(drop=True)
     df_account.rename(columns={'from': '2_address'}, inplace=True)
     df_account['1_primary_key'] = df_account.apply(lambda row: hash_row('account', row), axis=1)
 
-    df_isContract = df_contractInfo_splitted.filter(['address', 'sd']).drop_duplicates().reset_index(drop=True)
+    # TODO: AGREGAR SI INVOCA
+
+    df_isContract = df_contractInfo_splitted.filter(['address', 'sd'])
     df_isContract.rename(columns={'address': '2_address'}, inplace=True)
     df_isContract = pd.concat([df_isContract, df_contract_creation_addresses], ignore_index=True).sort_values(by='sd').drop_duplicates(subset='2_address', keep='first').reset_index(drop=True)
     df_isContract['1_primary_key'] = df_isContract.apply(lambda row: hash_row('is_smart_contract', row), axis=1)
@@ -111,8 +115,8 @@ def main():
     df_invoke.columns = ['2_address', '3_address', '4_block_number', 'sd']
     df_invoke['1_primary_key'] = df_invoke.apply(lambda row: hash_row('invoke', row), axis=1)
 
-    df_is_owner = df_contract_creation.filter(['from', 'creates', 'sd']).drop_duplicates().reset_index(drop=True)
-    df_contract_owner = df_contractInfo_splitted.filter(['creator','address', 'sd'])
+    df_is_owner = df_contract_creation.filter(['from', 'creates', 'sd']).reset_index(drop=True)
+    df_contract_owner = df_contractInfo_splitted.filter(['creator','address', 'sd']).reset_index(drop=True)
     df_contract_owner.columns = ['2_address', '3_address', 'sd']
     df_is_owner.columns = ['2_address', '3_address', 'sd']
     df_is_owner = pd.concat([df_is_owner, df_contract_owner]).drop_duplicates().reset_index(drop=True)
@@ -267,7 +271,7 @@ def main():
             for key in ans.keys():
                 print("Variable", key, "instanciada con valor", ans[key].getValue())
 
-        print(evaluator.evaluate(answers, df_account_sd))
+        print(evaluator.evaluate(answers, df_account_sd, sd))
 
         print('NetDERChase.contador', NetDERChase.contador)
         print('tiempo de traduccion:', RDBHomomorphism.TRANSLATE_TIME)

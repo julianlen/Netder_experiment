@@ -6,16 +6,37 @@ class EvaluatorTesis:
     vp = 0
     vn = 0
     fn = 0
+    # precision = 0
+    # recall = 0
     old_malicious_accounts = set()
     old_non_malicious_accounts = set()
+    account_aparitions = {}
+    malicious_account_distance = {}
 
     def __init__(self, df_ground_truth):
         self._set_ground_truth = set(df_ground_truth['address'].unique())
 
-    def evaluate(self, malicious_accounts, accounts_in_sd):
+    def evaluate(self, malicious_accounts, accounts_in_sd, sd):
         malicious_sd = set(ans['A1'].getValue() for ans in malicious_accounts)
         new_non_malicious_accounts = set(accounts_in_sd['2_address']).difference(malicious_sd).difference(self.old_non_malicious_accounts)
         new_malicious_accounts = malicious_sd.difference(self.old_malicious_accounts)
+        print('NetDer ANS: ' + str([s for s in malicious_sd]))
+        print('Accounts: ' + str([s for s in accounts_in_sd['2_address']]))
+        print('new_non_malicious_accounts: ' + str([s for s in new_non_malicious_accounts]))
+        print('new_malicious_accounts: ' + str([s for s in new_malicious_accounts]))
+
+        for new_acc in new_non_malicious_accounts:
+            self.account_aparitions[new_acc] = sd
+
+        for new_mal_acc in new_malicious_accounts:
+            if new_mal_acc in self.account_aparitions.keys():
+                self.malicious_account_distance[new_mal_acc] = sd - self.account_aparitions[new_mal_acc]
+            else:
+                self.malicious_account_distance[new_mal_acc] = 0
+
+        # TODO: Las maliciosas que son realmente maliciosas
+        print('Distancias')
+        print(self.malicious_account_distance)
 
         for mal_account in new_malicious_accounts:
             if mal_account in self._set_ground_truth:
@@ -28,11 +49,10 @@ class EvaluatorTesis:
             else:
                 self.vn += 1
 
-        self.old_malicious_accounts.union(new_malicious_accounts)
-        self.old_non_malicious_accounts.union(new_non_malicious_accounts)
+        self.old_malicious_accounts = self.old_malicious_accounts.union(new_malicious_accounts)
+        self.old_non_malicious_accounts = self.old_non_malicious_accounts.union(new_non_malicious_accounts)
 
-        precision = 0
-        recall = 0
+
         f1 = None
         if ((self.vp + self.fp) != 0):
             precision = self.vp / (self.vp + self.fp)
