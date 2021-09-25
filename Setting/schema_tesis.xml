@@ -3,6 +3,113 @@
 <dbname>
 	blockchain_db
 </dbname>
+<table name = "transferencias">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+	<primaryKey>
+		5_transferencias
+	</primaryKey>
+</table>
+<table name = "invocaciones">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+	<primaryKey>
+		5_invocaciones
+	</primaryKey>
+</table>
+<table name = "contracts_created">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+	<primaryKey>
+		5_contracts_created
+	</primaryKey>
+</table>
+<table name = "threshold_gasPrice_out">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_address
+	</primaryKey>
+	<primaryKey>
+		4_thr_gasPrice_out
+	</primaryKey>
+</table>
+<table name = "threshold_gasPrice_in">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_address
+	</primaryKey>
+	<primaryKey>
+		4_thr_gasPrice_in
+	</primaryKey>
+</table>
+<table name = "threshold_balance_out">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_address
+	</primaryKey>
+	<primaryKey>
+		4_thr_balance_out
+	</primaryKey>
+</table>
+<table name = "threshold_balance_in">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_address
+	</primaryKey>
+	<primaryKey>
+		4_thr_balance_in
+	</primaryKey>
+</table>
 <table name = "hyp_malicious">
 	<primaryKey>
 		1_primary_key

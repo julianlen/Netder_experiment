@@ -25,6 +25,99 @@ SET time_zone = "+00:00";
 --
 --
 
+CREATE TABLE `transferencias` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL,
+  `5_value_transferido` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `invocaciones` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL,
+  `5_invocaciones` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `contracts_created` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL,
+  `5_contracts_created` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `threshold_degree_out` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_address` text NOT NULL,
+  `4_thr_degree_out` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `threshold_degree_in` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_address` text NOT NULL,
+  `4_thr_degree_in` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `threshold_gasPrice_in` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_address` text NOT NULL,
+  `4_thr_gasPrice_in` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `threshold_gasPrice_out` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_address` text NOT NULL,
+  `4_thr_gasPrice_out` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `threshold_balance_out` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_address` text NOT NULL,
+  `4_thr_balance_out` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `threshold_balance_in` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_address` text NOT NULL,
+  `4_thr_balance_in` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
 CREATE TABLE `is_owner` (
   `1_primary_key` text NOT NULL,
   `2_address` text NOT NULL,
@@ -155,6 +248,63 @@ CREATE TABLE `net_diff_fact` (
 --
 -- Índices para tablas volcadas
 --
+--
+-- Indices de la tabla `transferencias`
+--
+
+ALTER TABLE `transferencias`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+--
+-- Indices de la tabla `invocaciones`
+--
+
+ALTER TABLE `invocaciones`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+--
+-- Indices de la tabla `contracts_created`
+--
+
+ALTER TABLE `contracts_created`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+--
+-- Indices de la tabla `threshold_degree_in`
+--
+
+ALTER TABLE `threshold_degree_in`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+--
+-- Indices de la tabla `threshold_degree_out`
+--
+
+ALTER TABLE `threshold_degree_out`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+--
+-- Indices de la tabla `threshold_gasPrice_in`
+--
+
+ALTER TABLE `threshold_gasPrice_in`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `threshold_gasPrice_out`
+--
+
+ALTER TABLE `threshold_gasPrice_out`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `threshold_balance_out`
+--
+
+ALTER TABLE `threshold_balance_out`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+
+--
+-- Indices de la tabla `threshold_balance_in`
+--
+
+ALTER TABLE `threshold_balance_in`
+  ADD PRIMARY KEY (`1_primary_key`(40));
 
 --
 -- Indices de la tabla `is_owner`

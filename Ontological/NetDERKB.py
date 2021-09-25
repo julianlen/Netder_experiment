@@ -28,9 +28,16 @@ drop_mapping = "TRUNCATE TABLE `mapping`; "
 drop_net_diff_fact = "TRUNCATE TABLE `net_diff_fact`; "
 drop_node = "TRUNCATE TABLE `node`; "
 drop_null_info = "TRUNCATE TABLE `null_info`;"
+drop_threshold_balance_in = "TRUNCATE TABLE `threshold_balance_in`;"
+drop_threshold_balance_out = "TRUNCATE TABLE `threshold_balance_out`;"
+drop_threshold_gasPrice_in = "TRUNCATE TABLE `threshold_gasPrice_in`;"
+drop_threshold_gasPrice_out = "TRUNCATE TABLE `threshold_gasPrice_out`;"
+drop_threshold_degree_in = "TRUNCATE TABLE `threshold_degree_in`;"
+drop_threshold_degree_out = "TRUNCATE TABLE `threshold_degree_out`;"
+drop_contracts_created = "TRUNCATE TABLE `contracts_created`;"
+drop_invocaciones = "TRUNCATE TABLE `invocaciones`;"
 
 def drop_tables(con):
-    # con.execute(drop_account)
     con.execute(drop_edge)
     con.execute(drop_hyp_malicious)
     con.execute(drop_hyp_same_person)
@@ -42,7 +49,14 @@ def drop_tables(con):
     con.execute(drop_net_diff_fact)
     con.execute(drop_node)
     con.execute(drop_null_info)
-
+    con.execute(drop_threshold_balance_in)
+    con.execute(drop_threshold_balance_out)
+    con.execute(drop_threshold_gasPrice_in)
+    con.execute(drop_threshold_gasPrice_out)
+    con.execute(drop_threshold_degree_in)
+    con.execute(drop_threshold_degree_out)
+    con.execute(drop_contracts_created)
+    con.execute(drop_invocaciones)
 
 class NetDERKB:
 	NULL_INFO = "null_info"

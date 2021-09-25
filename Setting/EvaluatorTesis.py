@@ -6,8 +6,6 @@ class EvaluatorTesis:
     vp = 0
     vn = 0
     fn = 0
-    # precision = 0
-    # recall = 0
     old_malicious_accounts = set()
     old_non_malicious_accounts = set()
     account_aparitions = {}
@@ -26,15 +24,16 @@ class EvaluatorTesis:
         print('new_malicious_accounts: ' + str([s for s in new_malicious_accounts]))
 
         for new_acc in new_non_malicious_accounts:
-            self.account_aparitions[new_acc] = sd
+            if new_acc in self._set_ground_truth:
+                self.account_aparitions[new_acc] = sd
 
         for new_mal_acc in new_malicious_accounts:
-            if new_mal_acc in self.account_aparitions.keys():
-                self.malicious_account_distance[new_mal_acc] = sd - self.account_aparitions[new_mal_acc]
-            else:
-                self.malicious_account_distance[new_mal_acc] = 0
+            if new_mal_acc in self._set_ground_truth:
+                if new_mal_acc in self.account_aparitions.keys():
+                    self.malicious_account_distance[new_mal_acc] = sd - self.account_aparitions[new_mal_acc]
+                else:
+                    self.malicious_account_distance[new_mal_acc] = 0
 
-        # TODO: Las maliciosas que son realmente maliciosas
         print('Distancias')
         print(self.malicious_account_distance)
 
@@ -54,11 +53,11 @@ class EvaluatorTesis:
 
 
         f1 = None
-        if ((self.vp + self.fp) != 0):
+        if (self.vp + self.fp) != 0:
             precision = self.vp / (self.vp + self.fp)
         else:
             precision = None
-        if ((self.vp + self.fn) != 0):
+        if (self.vp + self.fn) != 0:
             recall = self.vp / (self.vp + self.fn)
         else:
             recall = None

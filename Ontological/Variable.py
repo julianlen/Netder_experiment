@@ -14,9 +14,9 @@ class Variable(Term):
 			mystring = mystring.encode('utf-8')
 			result = int(hashlib.sha1(mystring).hexdigest(), 16)
 		return result
-		return int(hashlib.sha1(string).hexdigest(), 16)
+		# return int(hashlib.sha1(string).hexdigest(), 16)
 
 	def __str__(self):
-		print('---------')
-		print('self._id', self._id)
+		# print('---------')
+		# print('self._id', self._id)
 		return str(self._id)
