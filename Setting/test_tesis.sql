@@ -25,6 +25,164 @@ SET time_zone = "+00:00";
 --
 --
 
+CREATE TABLE `warning_contracts_created` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `warning_degree_in` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `warning_degree_out` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `warning_balance_out` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `warning_balance_in` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `warning_gasPrice_out` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `warning_gasPrice_in` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `gasPrice_out` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL,
+  `5_gasPrice_out` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `gasPrice_in` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL,
+  `5_gasPrice_in` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `balance_out` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL,
+  `5_balance_out` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `balance_in` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL,
+  `5_balance_in` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `degree_out` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL,
+  `5_degree_out` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `degree_in` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL,
+  `5_degree_in` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `threshold_invocaciones` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL,
+  `5_threshold_invocaciones` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
+CREATE TABLE `threshold_transferencias` (
+  `1_primary_key` text NOT NULL,
+  `2_sd` text NOT NULL,
+  `3_blockNumber` text NOT NULL,
+  `4_address` text NOT NULL,
+  `5_threshold_transferencias` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+--
+--
+
 CREATE TABLE `transferencias` (
   `1_primary_key` text NOT NULL,
   `2_sd` text NOT NULL,
@@ -156,27 +314,6 @@ CREATE TABLE `hyp_same_person` (
 --
 --
 
-CREATE TABLE `is_smart_contract` (
-  `1_primary_key` text NOT NULL,
-  `2_address` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
---
---
---
-
-CREATE TABLE `is_eoa` (
-  `1_primary_key` text NOT NULL,
-  `2_address` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
---
---
-
 CREATE TABLE `hyp_malicious` (
   `1_primary_key` text NOT NULL,
   `2_address` text NOT NULL,
@@ -248,6 +385,18 @@ CREATE TABLE `net_diff_fact` (
 --
 -- Índices para tablas volcadas
 --
+--
+-- Indices de la tabla `threshold_invocaciones`
+--
+
+ALTER TABLE `threshold_invocaciones`
+  ADD PRIMARY KEY (`1_primary_key`(40));
+--
+-- Indices de la tabla `threshold_transferencias`
+--
+
+ALTER TABLE `threshold_transferencias`
+  ADD PRIMARY KEY (`1_primary_key`(40));
 --
 -- Indices de la tabla `transferencias`
 --
@@ -325,20 +474,6 @@ ALTER TABLE `invoke`
 --
 
 ALTER TABLE `hyp_same_person`
-  ADD PRIMARY KEY (`1_primary_key`(40));
-
---
--- Indices de la tabla `is_smart_contract`
---
-
-ALTER TABLE `is_smart_contract`
-  ADD PRIMARY KEY (`1_primary_key`(40));
-
---
--- Indices de la tabla `is_eoa`
---
-
-ALTER TABLE `is_eoa`
   ADD PRIMARY KEY (`1_primary_key`(40));
 
 --

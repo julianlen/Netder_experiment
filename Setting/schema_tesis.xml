@@ -3,6 +3,240 @@
 <dbname>
 	blockchain_db
 </dbname>
+<table name = "warning_contracts_created">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+</table>
+<table name = "warning_gasPrice_in">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+</table>
+<table name = "warning_gasPrice_out">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+</table>
+<table name = "warning_balance_out">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+</table>
+<table name = "warning_balance_in">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+</table>
+<table name = "warning_degree_out">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+</table>
+<table name = "warning_degree_in">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+</table>
+<table name = "degree_in">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+	<primaryKey>
+		5_degree_in
+	</primaryKey>
+</table>
+<table name = "degree_out">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+	<primaryKey>
+		5_degree_out
+	</primaryKey>
+</table>
+<table name = "balance_in">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+	<primaryKey>
+		5_balance_in
+	</primaryKey>
+</table>
+<table name = "balance_out">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+	<primaryKey>
+		5_balance_out
+	</primaryKey>
+</table>
+<table name = "gasPrice_in">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+	<primaryKey>
+		5_gasPrice_in
+	</primaryKey>
+</table>
+<table name = "gasPrice_out">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+	<primaryKey>
+		5_gasPrice_out
+	</primaryKey>
+</table>
+<table name = "threshold_invocaciones">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+	<primaryKey>
+		5_threshold_invocaciones
+	</primaryKey>
+</table>
+<table name = "threshold_transferencias">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_blockNumber
+	</primaryKey>
+	<primaryKey>
+		4_address
+	</primaryKey>
+	<primaryKey>
+		5_threshold_transferencias
+	</primaryKey>
+</table>
 <table name = "transferencias">
 	<primaryKey>
 		1_primary_key
@@ -110,6 +344,34 @@
 		4_thr_balance_in
 	</primaryKey>
 </table>
+<table name = "threshold_degree_out">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_address
+	</primaryKey>
+	<primaryKey>
+		4_thr_degree_out
+	</primaryKey>
+</table>
+<table name = "threshold_degree_in">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_sd
+	</primaryKey>
+	<primaryKey>
+		3_address
+	</primaryKey>
+	<primaryKey>
+		4_thr_degree_in
+	</primaryKey>
+</table>
 <table name = "hyp_malicious">
 	<primaryKey>
 		1_primary_key
@@ -158,22 +420,6 @@
 	</primaryKey>
 	<primaryKey>
 		4_block_number
-	</primaryKey>
-</table>
-<table name = "is_smart_contract">
-	<primaryKey>
-		1_primary_key
-	</primaryKey>
-	<primaryKey>
-		2_address
-	</primaryKey>
-</table>
-<table name = "is_eoa">
-	<primaryKey>
-		1_primary_key
-	</primaryKey>
-	<primaryKey>
-		2_address
 	</primaryKey>
 </table>
 </root>

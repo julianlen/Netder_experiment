@@ -104,18 +104,14 @@ def main():
         level=['from']).cumsum().reset_index()
     df_contracts_created['threshold'] = df_contracts_created['creates'] * 0.5
     df_contracts_created = df_contracts_created.rename(columns={'from': 'owner'})
-    df_contracts_created_atoms = df_contracts_created.filter(['blockNumber', 'owner', 'creates'])
-    df_contracts_created_atoms = get_sub_datasets(df_contracts_created_atoms, sub_datasets)
-    df_contracts_created_atoms.rename(columns={'sd': '2_sd', 'blockNumber':'3_blockNumber','owner': '4_address', 'creates': '5_contracts_created'},
-                             inplace=True)
-    df_contracts_created_atoms['1_primary_key'] = df_contracts_created_atoms.apply(
-        lambda row: hash_row_with_sd('contracts_created', row), axis=1).drop_duplicates().reset_index(drop=True)
+    df_contracts_created = get_sub_datasets(df_contracts_created, sub_datasets)
+
 
     # INVOCACIONES
     df_creaciones = df_transactionInfo[(df_transactionInfo['creates'] != 'None')].filter(
         ['from', 'creates']).reset_index(drop=True)  # Me quedo con los contratos creados y su creador
     df_invocaciones = df_transactionInfo[(df_transactionInfo['callingFunction'] != '0x')].filter(
-        ['sd', 'blockNumber', 'to'])  # Me quedo con las invocaciones y a quién se dirige.
+        ['blockNumber', 'to'])  # Me quedo con las invocaciones y a quién se dirige.
     df_invocaciones = df_invocaciones.loc[df_invocaciones['to'].isin(df_creaciones['creates'])].reset_index(
         drop=True)  # Filtro las invocaciones dentro de los contratos creados
     df_creaciones = df_creaciones.set_index(df_creaciones['creates'], drop=True).drop(columns=['creates']).rename(
@@ -126,10 +122,7 @@ def main():
     df_invocaciones = df_invocaciones_aux.groupby(['blockNumber', 'owner']).count().groupby(level=['owner'],
                                                                                                   sort=False).cumsum().reset_index()  # Esto me va a generr repetidos, que nos sirve ya que es la cantidad de veces que se llamo al contrto
     df_invocaciones_atom = get_sub_datasets(df_invocaciones, sub_datasets)
-    df_invocaciones_atom.rename(columns={'sd': '2_sd', 'blockNumber':'3_blockNumber','owner': '4_address', '#invocations': '5_invocaciones'},
-                             inplace=True)
-    df_invocaciones_atom['1_primary_key'] = df_invocaciones_atom.apply(
-        lambda row: hash_row_with_sd('invocaciones', row), axis=1).drop_duplicates().reset_index(drop=True)
+
 
 
     # TRANSFERENCIAS
@@ -148,10 +141,7 @@ def main():
         sort=False).cumsum().reset_index()  # Cuento cuanto queda de valor
 
     df_transferencias_atom = get_sub_datasets(df_transferencias, sub_datasets)
-    df_transferencias_atom.rename(columns={'sd': '2_sd', 'blockNumber':'3_blockNumber','owner': '4_address', 'value': '5_value_transferido'},
-                             inplace=True)
-    df_transferencias_atom['1_primary_key'] = df_transferencias_atom.apply(
-        lambda row: hash_row_with_sd('transferencias', row), axis=1).drop_duplicates().reset_index(drop=True)
+
 
 
     # Calculo de threshold para invocaciones
@@ -165,7 +155,7 @@ def main():
     # sea mayor a T1. Ahora si se invoca a un contrato creado por X en el bloque BN8, la cantidad de contratos creados por X fue computada en BN5. O sea 2.
     # Es importante remarcar que los thresholds en este caso se hacen por block number y no por sd.
 
-    df_threshold_invocaciones = pd.merge(df_contracts_created, df_invocaciones, how="inner", on=["owner"])
+    df_threshold_invocaciones = pd.merge(df_contracts_created, df_invocaciones_atom, how="inner", on=["owner"])
     df_threshold_invocaciones = df_threshold_invocaciones[
         df_threshold_invocaciones['blockNumber_x'] <= df_threshold_invocaciones['blockNumber_y']]
     df_threshold_invocaciones = df_threshold_invocaciones.groupby(
@@ -174,73 +164,140 @@ def main():
     df_threshold_invocaciones['threshold'] = df_threshold_invocaciones['threshold'] * df_threshold_invocaciones[
         '#invocations']
     df_threshold_invocaciones = df_threshold_invocaciones.filter(
-        ['sd_y', 'blockNumber_y', 'owner', 'threshold', '#invocations']).rename(
-        columns={'sd_y': 'sd', 'blockNumber_y': 'blockNumber'})
-    #
-    # # Calculo de threshold para transferencias
-    # df_threshold_transferencias = pd.merge(df_contracts_created, df_transferencias, how="inner", on=["owner"])
-    # df_threshold_transferencias = df_threshold_transferencias[
-    #     df_threshold_transferencias['blockNumber_x'] <= df_threshold_transferencias['blockNumber_y']]
-    # df_threshold_transferencias = df_threshold_transferencias.groupby(
-    #     ['sd_y', 'blockNumber_y', 'owner']).max().reset_index().filter(
-    #     ['sd_y', 'blockNumber_y', 'owner', 'blockNumber_x', 'threshold', 'value'])
-    # df_threshold_transferencias['threshold'] = df_threshold_transferencias['threshold'] * df_threshold_transferencias[
-    #     'value']
-    # df_threshold_transferencias = df_threshold_transferencias.filter(
-    #     ['sd_y', 'blockNumber_y', 'owner', 'threshold', 'value']).rename(
-    #     columns={'sd_y': 'sd', 'blockNumber_y': 'blockNumber'})
+        ['sd_y', 'blockNumber_y', 'owner', 'threshold']).rename(
+        columns={'sd_y': '2_sd', 'blockNumber_y': '3_blockNumber', 'owner':'4_address', 'threshold':'5_threshold_invocaciones'})
+    df_threshold_invocaciones['1_primary_key'] = df_threshold_invocaciones.apply(
+        lambda row: hash_row_with_sd('threshold_invocaciones', row), axis=1).drop_duplicates().reset_index(drop=True)
 
+    # Calculo de threshold para transferencias
+    df_threshold_transferencias = pd.merge(df_contracts_created, df_transferencias_atom, how="inner", on=["owner"])
+    df_threshold_transferencias = df_threshold_transferencias[
+        df_threshold_transferencias['blockNumber_x'] <= df_threshold_transferencias['blockNumber_y']]
+    df_threshold_transferencias = df_threshold_transferencias.groupby(
+        ['sd_y', 'blockNumber_y', 'owner']).max().reset_index().filter(
+        ['sd_y', 'blockNumber_y', 'owner', 'blockNumber_x', 'threshold', 'value'])
+    df_threshold_transferencias['threshold'] = df_threshold_transferencias['threshold'] * df_threshold_transferencias[
+        'value']
+    df_threshold_transferencias = df_threshold_transferencias.filter(
+        ['sd_y', 'blockNumber_y', 'owner', 'threshold']).rename( # Value deberia agaregarse para comparar el threshold
+        columns={'sd_y': '2_sd', 'blockNumber_y': '3_blockNumber', 'owner':'4_address', 'threshold':'5_threshold_transferencias'})
+    df_threshold_transferencias['1_primary_key'] = df_threshold_transferencias.apply(
+        lambda row: hash_row_with_sd('threshold_transferencias', row), axis=1).drop_duplicates().reset_index(drop=True)
 
+    df_invocaciones_atom.rename(columns={'sd': '2_sd', 'blockNumber':'3_blockNumber','owner': '4_address', '#invocations': '5_invocaciones'},
+                             inplace=True)
+    df_invocaciones_atom['1_primary_key'] = df_invocaciones_atom.apply(
+        lambda row: hash_row_with_sd('invocaciones', row), axis=1).drop_duplicates().reset_index(drop=True)
 
-    # Get threshold per dataset per account
+    df_transferencias_atom.rename(columns={'sd': '2_sd', 'blockNumber':'3_blockNumber','owner': '4_address', 'value': '5_value_transferido'},
+                             inplace=True)
+    df_transferencias_atom['1_primary_key'] = df_transferencias_atom.apply(
+        lambda row: hash_row_with_sd('transferencias', row), axis=1).drop_duplicates().reset_index(drop=True)
 
-    max_degree = df_transactionInfo_splitted.filter(['sd','blockNumber','from','to']).drop_duplicates().reset_index(drop=True)
+    df_contracts_created_atoms = df_contracts_created.filter(['sd','blockNumber', 'owner', 'creates'])
+    df_contracts_created_atoms = df_contracts_created_atoms.rename(columns={'sd': '2_sd', 'blockNumber':'3_blockNumber','owner': '4_address', 'creates': '5_contracts_created'})
+    df_contracts_created_atoms['1_primary_key'] = df_contracts_created_atoms.apply(
+        lambda row: hash_row_with_sd('contracts_created', row), axis=1).drop_duplicates().reset_index(drop=True)
 
-    max_degree_in = max_degree.groupby(['sd', 'blockNumber', 'to']).count().reset_index().filter(['sd', 'from', 'to'])
-    df_thr_degree_in = (max_degree_in.groupby(['sd', 'to']).max() * 0.8).reset_index()
+    # Get threshold and atoms per dataset per account
+
+    degree = df_transactionInfo_splitted.filter(['sd','blockNumber','from','to']).drop_duplicates().reset_index(drop=True)
+
+    # DEGREE_IN
+    df_degree_in = degree.groupby(['sd', 'blockNumber', 'to']).count().reset_index()
+    # DEGREE_IN_THRESHOOLD
+    df_max_degree_in =df_degree_in.filter(['sd', 'from', 'to'])
+    df_thr_degree_in = (df_max_degree_in.groupby(['sd', 'to']).max() * 0.8).reset_index()
     df_thr_degree_in.rename(columns={'sd': '2_sd', 'to': '3_address', 'from': '4_thr_degree_in'},
                              inplace=True)
     df_thr_degree_in['1_primary_key'] = df_thr_degree_in.apply(
         lambda row: hash_row_with_sd('threshold_degree_in', row), axis=1).drop_duplicates().reset_index(drop=True)
 
-    max_degree_out = max_degree.groupby(['sd', 'blockNumber', 'from']).count().reset_index().filter(['sd', 'from', 'to'])
+    df_degree_in.rename(columns={'sd': '2_sd', 'blockNumber':'3_blockNumber', 'to': '4_address', 'from': '5_degree_in'},
+                            inplace=True)
+    df_degree_in['1_primary_key'] = df_degree_in.apply(
+        lambda row: hash_row_with_sd('degree_in', row), axis=1).drop_duplicates().reset_index(drop=True)
+
+    # DEGREE_OUT
+    df_degree_out = degree.groupby(['sd', 'blockNumber', 'from']).count().reset_index()
+    # DEGREE_OUT_THRESHOOLD
+    max_degree_out = df_degree_out.filter(['sd', 'from', 'to'])
     df_thr_degree_out = (max_degree_out.groupby(['sd', 'from']).max() * 0.8).reset_index()
     df_thr_degree_out.rename(columns={'sd': '2_sd', 'from': '3_address', 'to': '4_thr_degree_out'},
                                inplace=True)
     df_thr_degree_out['1_primary_key'] = df_thr_degree_out.apply(
         lambda row: hash_row_with_sd('threshold_degree_out', row), axis=1).drop_duplicates().reset_index(drop=True)
 
+    df_degree_out.rename(
+        columns={'sd': '2_sd', 'blockNumber': '3_blockNumber', 'from': '4_address', 'to': '5_degree_out'},
+        inplace=True)
+    df_degree_out['1_primary_key'] = df_degree_out.apply(
+        lambda row: hash_row_with_sd('degree_out', row), axis=1).drop_duplicates().reset_index(drop=True)
 
-    max_gas_price_out = df_transactionInfo_splitted.filter(['sd','from','gasPrice']).drop_duplicates().reset_index(drop=True)
-    grouped_max_gas_price_out = max_gas_price_out.groupby(['sd', 'from'])
-    df_thr_gasPrice_out = grouped_max_gas_price_out.apply(lambda x: x.max() * 0.8).reset_index()
+    # GAS_PRICE_OUT
+    df_gas_price_out_atom = df_transactionInfo_splitted.filter(['sd', 'blockNumber', 'from', 'gasPrice']).drop_duplicates().reset_index(drop=True)
+    df_gas_price_out_atom.rename(columns={'sd': '2_sd', 'blockNumber': '3_blockNumber', 'from': '4_address', 'gasPrice': '5_gasPrice_out'},
+                               inplace=True)
+    df_gas_price_out_atom['1_primary_key'] = df_gas_price_out_atom.apply(
+        lambda row: hash_row_with_sd('gasPrice_out', row), axis=1).drop_duplicates().reset_index(drop=True)
+
+    # GAS_PRICE_OUT_THRESHOLD
+    df_gas_price_out = df_transactionInfo_splitted.filter(['sd','from','gasPrice']).drop_duplicates().reset_index(drop=True)
+    df_thr_gasPrice_out = df_gas_price_out.groupby(['sd', 'from']).max().reset_index()
+    df_thr_gasPrice_out['gasPrice'] = df_thr_gasPrice_out['gasPrice']*0.8
     df_thr_gasPrice_out.rename(columns={'sd': '2_sd', 'from': '3_address', 'gasPrice': '4_thr_gasPrice_out'},
                               inplace=True)
     df_thr_gasPrice_out['1_primary_key'] = df_thr_gasPrice_out.apply(
         lambda row: hash_row_with_sd('threshold_gasPrice_out', row), axis=1).drop_duplicates().reset_index(drop=True)
 
-    max_gas_price_in = df_transactionInfo_splitted.filter(['sd', 'to', 'gasPrice']).drop_duplicates().reset_index(drop=True)
-    grouped_max_gas_price_in = max_gas_price_in.groupby(['sd', 'to'])
-    df_thr_gasPrice_in = grouped_max_gas_price_in.apply(lambda x: x.max() * 0.8).reset_index()
+    # GAS_PRICE_IN
+    df_gas_price_in_atom = df_transactionInfo_splitted.filter(['sd', 'blockNumber', 'to', 'gasPrice']).drop_duplicates().reset_index(drop=True)
+    df_gas_price_in_atom.rename(
+        columns={'sd': '2_sd', 'blockNumber': '3_blockNumber', 'to': '4_address', 'gasPrice': '5_gasPrice_in'},
+        inplace=True)
+    df_gas_price_in_atom['1_primary_key'] = df_gas_price_in_atom.apply(
+        lambda row: hash_row_with_sd('gasPrice_in', row), axis=1).drop_duplicates().reset_index(drop=True)
+
+    # GAS_PRICE_IN_THRESHOLD
+    df_gas_price_in = df_transactionInfo_splitted.filter(['sd', 'to', 'gasPrice']).drop_duplicates().reset_index(drop=True)
+    df_thr_gasPrice_in = df_gas_price_in.groupby(['sd', 'to']).max().reset_index()
+    df_thr_gasPrice_in['gasPrice'] = df_thr_gasPrice_in['gasPrice']*0.8
     df_thr_gasPrice_in.rename(columns={'sd': '2_sd', 'to': '3_address', 'gasPrice': '4_thr_gasPrice_in'}, inplace=True)
     df_thr_gasPrice_in['1_primary_key'] = df_thr_gasPrice_in.apply(
         lambda row: hash_row_with_sd('threshold_gasPrice_in', row), axis=1).drop_duplicates().reset_index(drop=True)
 
-    max_balance_out = df_transactionInfo_splitted.filter(['sd', 'from', 'value']).drop_duplicates().reset_index(drop=True)
-    grouped_max_balance_out = max_balance_out.groupby(['sd', 'from'])
-    df_thr_balance_out = grouped_max_balance_out.apply(lambda x: x.max() * 0.8).reset_index()
+    #   BALANCE_OUT
+    df_balance_out_atom = df_transactionInfo_splitted.filter(
+        ['sd', 'blockNumber', 'from', 'value']).drop_duplicates().reset_index(drop=True)
+    df_balance_out_atom.rename(
+        columns={'sd': '2_sd', 'blockNumber': '3_blockNumber', 'from': '4_address', 'value': '5_balance_out'},
+        inplace=True)
+    df_balance_out_atom['1_primary_key'] = df_balance_out_atom.apply(
+        lambda row: hash_row_with_sd('balance_out', row), axis=1).drop_duplicates().reset_index(drop=True)
+
+    #   BALANCE_OUT_THRESHOLD
+    df_balance_out = df_transactionInfo_splitted.filter(['sd', 'from', 'value']).drop_duplicates().reset_index(drop=True)
+    df_thr_balance_out = df_balance_out.groupby(['sd', 'from']).max().reset_index()
+    df_thr_balance_out['value'] = df_thr_balance_out['value'] * 0.8
     df_thr_balance_out.rename(columns={'sd': '2_sd', 'from': '3_address', 'value': '4_thr_balance_out'}, inplace=True)
     df_thr_balance_out['1_primary_key'] = df_thr_balance_out.apply(
         lambda row: hash_row_with_sd('threshold_balance_out', row), axis=1).drop_duplicates().reset_index(drop=True)
 
-    max_balance_in = df_transactionInfo_splitted.filter(['sd', 'to', 'value']).drop_duplicates().reset_index(drop=True)
-    grouped_max_balance_in = max_balance_in.groupby(['sd', 'to'])
-    df_thr_balance_in = grouped_max_balance_in.apply(lambda x: x.max() * 0.8).reset_index()
+    #   BALANCE_IN
+    df_balance_in_atom = df_transactionInfo_splitted.filter(
+        ['sd', 'blockNumber', 'to', 'value']).drop_duplicates().reset_index(drop=True)
+    df_balance_in_atom.rename(
+        columns={'sd': '2_sd', 'blockNumber': '3_blockNumber', 'to': '4_address', 'value': '5_balance_in'},
+        inplace=True)
+    df_balance_in_atom['1_primary_key'] = df_balance_in_atom.apply(
+        lambda row: hash_row_with_sd('balance_in', row), axis=1).drop_duplicates().reset_index(drop=True)
+
+    #   BALANCE_IN_THRESHOOOLD
+    df_balance_in = df_transactionInfo_splitted.filter(['sd', 'to', 'value']).drop_duplicates().reset_index(drop=True)
+    df_thr_balance_in = df_balance_in.groupby(['sd', 'to']).max().reset_index()
+    df_thr_balance_in['value'] = df_thr_balance_in['value'] * 0.8
     df_thr_balance_in.rename(columns={'sd':'2_sd', 'to':'3_address', 'value':'4_thr_balance_in'}, inplace=True)
     df_thr_balance_in['1_primary_key'] = df_thr_balance_in.apply(lambda row: hash_row_with_sd('threshold_balance_in', row), axis=1).drop_duplicates().reset_index(drop=True)
-
-    # TODO: Renombrar columnas threshold
-
 
     # Gets contract creations
     df_contract_creation = df_transactionInfo_splitted[df_transactionInfo_splitted['creates'] != 'None']
@@ -263,14 +320,14 @@ def main():
     df_invoke.columns = ['2_address', '3_address', '4_block_number', 'sd']
     df_invoke['1_primary_key'] = df_invoke.apply(lambda row: hash_row('invoke', row), axis=1)
 
-    # Gets all contracts
-    df_is_contract_by_invocation = df_transactionInfo_splitted[df_transactionInfo_splitted['callingFunction'] != '0x'].filter(['to', 'sd'])
-    df_is_contract_by_invocation.rename(columns={'to': '2_address'}, inplace=True)
-    df_isContract = pd.concat([df_contract_creation_addresses, df_is_contract_by_invocation], ignore_index=True).sort_values(by='sd').drop_duplicates(subset='2_address', keep='first').reset_index(drop=True)
-    df_isContract['1_primary_key'] = df_isContract.apply(lambda row: hash_row('is_smart_contract', row), axis=1)
+    # # Gets all contracts
+    # df_is_contract_by_invocation = df_transactionInfo_splitted[df_transactionInfo_splitted['callingFunction'] != '0x'].filter(['to', 'sd'])
+    # df_is_contract_by_invocation.rename(columns={'to': '2_address'}, inplace=True)
+    # df_isContract = pd.concat([df_contract_creation_addresses, df_is_contract_by_invocation], ignore_index=True).sort_values(by='sd').drop_duplicates(subset='2_address', keep='first').reset_index(drop=True)
+    # df_isContract['1_primary_key'] = df_isContract.apply(lambda row: hash_row('is_smart_contract', row), axis=1)
 
     # Gets all EOA
-    df_isEOA = df_account.loc[~df_account['2_address'].isin(df_isContract['2_address'])].drop_duplicates(subset='2_address', keep='first').reset_index(drop=True)
+    # df_isEOA = df_account.loc[~df_account['2_address'].isin(df_isContract['2_address'])].drop_duplicates(subset='2_address', keep='first').reset_index(drop=True)
 
     # Gets the owner of each contracts
     df_is_owner = df_contract_creation.filter(['from', 'creates', 'sd']).reset_index(drop=True)
@@ -298,7 +355,6 @@ def main():
     atom_hyp_eoa_malicioso_a1 = Atom('hyp_malicious', [Variable('A1'), Variable('B')])
     atom_hyp_eoa_malicioso_a2_b1 = Atom('hyp_malicious', [Variable('A2'), Variable('B1')])
     atom_hyp_eoa_malicioso_a2_b = Atom('hyp_malicious', [Variable('A2'), Variable('B')])
-    atom_is_eoa_a1 = Atom('is_eoa', [Variable('A1')])
     atom_is_owner_a1_c1 = Atom('is_owner', [Variable('A1'), Variable('C1')])
     atom_different_accounts_a1_a2 = Distinct(Variable('A1'), Variable('A2'))
     atom_gre_block_numbers_b1_b = GRE(Variable('B1'), Variable('B'))
@@ -306,12 +362,11 @@ def main():
     atom_gre_block_numbers_b1_b2 = GRE(Variable('B1'), Variable('B2'))
     atom_invoke_a2_c1 = Atom('invoke', [Variable('A2'), Variable('C1'), Variable('B1')])
     atom_invoke_a1_c1 = Atom('invoke', [Variable('A1'), Variable('C1'), Variable('B1')])
-
     atom_is_owner_a2_c1 = Atom('is_owner', [Variable('A2'), Variable('C1')])
 
-    # R6.1 hyp_malicioso(A1, B) & is_EOA(A1) & es_owner(A1, C1) & A1 != A2 & invoca(A2, C1, B1) & (B < B1) → hyp_misma_persona(A1, A2, B1)
+    # R6.1 hyp_malicioso(A1, B) & es_owner(A1, C1) & A1 != A2 & invoca(A2, C1, B1) & (B < B1) → hyp_misma_persona(A1, A2, B1)
     tgd_invoke_account_rule = NetDERTGD(rule_id=1,
-                                        ont_body=[atom_hyp_eoa_malicioso_a1, atom_is_eoa_a1, atom_is_owner_a1_c1,
+                                        ont_body=[atom_hyp_eoa_malicioso_a1, atom_is_owner_a1_c1,
                                                   atom_invoke_a2_c1, atom_gre_block_numbers_b1_b,
                                                   atom_different_accounts_a1_a2], ont_head=[atom_hyp_same_person_b1])
 
@@ -371,9 +426,6 @@ def main():
     tgd_same_person_malicious_v2 = NetDERTGD(rule_id=8, ont_body=[atom_hyp_malicioso_a1, atom_hyp_same_person_b1, atom_gre_block_numbers_b_b1],
                                           ont_head=[atom_hyp_eoa_malicioso_a2_b])
 
-    # kb = NetDERKB(data=set(), net_diff_graph=[], config_db=config_db_path, schema_path=schema_path,
-    #               netder_tgds=[tgd_invoke_account_rule, tgd_invoke_malicious, tgd_invoke_contract_rule,
-    #                            tgd_exist_same_account], netder_egds=[], netdiff_lrules=[], netdiff_grules=[])
     kb = NetDERKB(data=set(), net_diff_graph=[], config_db=config_db_path, schema_path=schema_path,
                   netder_tgds=[tgd_invoke_account_rule, tgd_invoke_contract_rule, tgd_same_person_malicious_v1, tgd_same_person_malicious_v2], netder_egds=[], netdiff_lrules=[], netdiff_grules=[])
 
@@ -385,6 +437,32 @@ def main():
 
         #   Account(Address)
         df_account_sd = df_account[df_account['sd'] == sd].filter(['1_primary_key', '2_address'])
+
+        # Degree_in(SD, BlockNumber, Address, degree_in)
+        df_degree_in_sd = df_degree_in[df_degree_in['2_sd'] == sd].filter(['1_primary_key', '2_sd', '3_blockNumber', '4_address', '5_degree_in'])
+
+        # Degree_out(SD, BlockNumber, Address, degree_out)
+        df_degree_out_sd = df_degree_out[df_degree_out['2_sd'] == sd].filter(['1_primary_key', '2_sd', '3_blockNumber', '4_address', '5_degree_out'])
+
+        # Gas_price_out(SD, BlockNumber, Address, gas_price_out)
+        df_gas_price_out_atom_sd = df_gas_price_out_atom[df_gas_price_out_atom['2_sd'] == sd].filter(['1_primary_key', '2_sd', '3_blockNumber', '4_address', '5_gasPrice_out'])
+
+        # Gas_price_in(SD, BlockNumber, Address, gas_price_in)
+        df_gas_price_in_atom_sd = df_gas_price_in_atom[df_gas_price_in_atom['2_sd'] == sd].filter(['1_primary_key', '2_sd', '3_blockNumber', '4_address', '5_gasPrice_in'])
+
+        # Balance_out(SD, BlockNumber, Address, balance_out)
+        df_balance_out_atom_sd = df_balance_out_atom[df_balance_out_atom['2_sd'] == sd].filter(['1_primary_key', '2_sd', '3_blockNumber', '4_address', '5_balance_out'])
+
+        # Balance_in(SD, BlockNumber, Address, balance_in)
+        df_balance_in_atom_sd = df_balance_in_atom[df_balance_in_atom['2_sd'] == sd].filter(['1_primary_key', '2_sd', '3_blockNumber', '4_address', '5_balance_in'])
+
+        # threshold_invocaciones(SD, BlockNumber, Address, Threshold_invocaciones)
+        df_threshold_invocaciones_sd = df_threshold_invocaciones[df_threshold_invocaciones['2_sd'] == sd].filter(
+            ['1_primary_key', '2_sd', '3_blockNumber', '4_address', '5_threshold_invocaciones'])
+
+        # threshold_transferencias(SD, BlockNumber, Address, Threshold_transferencias)
+        df_threshold_transferencias_sd = df_threshold_transferencias[df_threshold_transferencias['2_sd'] == sd].filter(
+            ['1_primary_key', '2_sd', '3_blockNumber', '4_address', '5_threshold_transferencias'])
 
         # contracts_created(SD, blockNumber, address, contracts_Created)
         df_contracts_created_atoms_sd = df_contracts_created_atoms[df_contracts_created_atoms['2_sd'] == sd].filter(
@@ -420,12 +498,6 @@ def main():
         #   threshold_balance_in(SD, Address, Balance_Out)
         df_thr_balance_out_sd = df_thr_balance_out[df_thr_balance_out['2_sd'] == sd].filter(['1_primary_key', '2_sd', '3_address', '4_thr_balance_out'])
 
-        #   is_smart_contract(Address)
-        df_isContract_sd = df_isContract[df_isContract['sd'] == sd].filter(['1_primary_key', '2_address'])
-
-        #   Is_EOA(Address)
-        df_isEOA_sd = df_isEOA[df_isEOA['sd'] == sd].filter(['1_primary_key', '2_address'])
-
         #   invoke(Address, Address, BlockNumber)
         df_invoke_sd = df_invoke[df_invoke['sd'] == sd].filter(['1_primary_key', '2_address', '3_address', '4_block_number'])
 
@@ -437,6 +509,8 @@ def main():
 
         engine = create_engine("mariadb+mariadbconnector://user:@127.0.0.1:3306/test_tesis")
 
+        df_threshold_invocaciones_sd.to_sql('threshold_invocaciones', con=engine, index=False, if_exists='append')
+        df_threshold_transferencias_sd.to_sql('threshold_transferencias', con=engine, index=False, if_exists='append')
         df_transferencias_atom_sd.to_sql('transferencias', con=engine, index=False, if_exists='append')
         df_invocaciones_atom_sd.to_sql('invocaciones', con=engine, index=False, if_exists='append')
         df_contracts_created_atoms_sd.to_sql('contracts_created', con=engine, index=False, if_exists='append')
@@ -448,9 +522,13 @@ def main():
         df_thr_balance_in_sd.to_sql('threshold_balance_in', con=engine, index=False, if_exists='append')
         df_invoke_sd.to_sql('invoke', con=engine, index=False, if_exists='append')
         df_is_owner_sd.to_sql('is_owner', con=engine, index=False, if_exists='append')
-        df_isContract_sd.to_sql('is_smart_contract', con=engine, index=False, if_exists='append')
-        df_isEOA_sd.to_sql('is_eoa', con=engine, index=False, if_exists='append')
         df_malicious_sd.to_sql('hyp_malicious', con=engine, index=False, if_exists='append')
+        df_degree_in_sd.to_sql('degree_in', con=engine, index=False, if_exists='append')
+        df_degree_out_sd.to_sql('degree_out', con=engine, index=False, if_exists='append')
+        df_gas_price_out_atom_sd.to_sql('gasPrice_out', con=engine, index=False, if_exists='append')
+        df_gas_price_in_atom_sd.to_sql('gasPrice_in', con=engine, index=False, if_exists='append')
+        df_balance_out_atom_sd.to_sql('balance_out', con=engine, index=False, if_exists='append')
+        df_balance_in_atom_sd.to_sql('balance_in', con=engine, index=False, if_exists='append')
 
 
         chase = NetDERChase(kb, tmax)

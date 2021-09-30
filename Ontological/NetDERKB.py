@@ -21,9 +21,9 @@ drop_edge = "TRUNCATE TABLE `edge`;"
 drop_hyp_malicious = "TRUNCATE TABLE `hyp_malicious`; "
 drop_hyp_same_person = "TRUNCATE TABLE `hyp_same_person`; "
 drop_invoke = "TRUNCATE TABLE `invoke`; "
-drop_is_eoa = "TRUNCATE TABLE `is_eoa`; "
+# drop_is_eoa = "TRUNCATE TABLE `is_eoa`; "
 drop_is_owner = "TRUNCATE TABLE `is_owner`; "
-drop_is_smart_contract = "TRUNCATE TABLE `is_smart_contract`; "
+# drop_is_smart_contract = "TRUNCATE TABLE `is_smart_contract`; "
 drop_mapping = "TRUNCATE TABLE `mapping`; "
 drop_net_diff_fact = "TRUNCATE TABLE `net_diff_fact`; "
 drop_node = "TRUNCATE TABLE `node`; "
@@ -36,15 +36,29 @@ drop_threshold_degree_in = "TRUNCATE TABLE `threshold_degree_in`;"
 drop_threshold_degree_out = "TRUNCATE TABLE `threshold_degree_out`;"
 drop_contracts_created = "TRUNCATE TABLE `contracts_created`;"
 drop_invocaciones = "TRUNCATE TABLE `invocaciones`;"
+drop_transferencias = "TRUNCATE TABLE `transferencias`;"
+drop_threshold_invocaciones = "TRUNCATE TABLE `threshold_invocaciones`;"
+drop_threshold_transferencias = "TRUNCATE TABLE `threshold_transferencias`;"
+drop_degree_in = "TRUNCATE TABLE `degree_in`;"
+drop_degree_out = "TRUNCATE TABLE `degree_out`;"
+drop_gasPrice_out = "TRUNCATE TABLE `gasPrice_out`;"
+drop_gasPrice_in = "TRUNCATE TABLE `gasPrice_in`;"
+drop_balance_out = "TRUNCATE TABLE `balance_out`;"
+drop_balance_in = "TRUNCATE TABLE `balance_in`;"
+drop_warning_contracts_created = "TRUNCATE TABLE `warning_contracts_created`;"
+drop_warning_gasPrice_in = "TRUNCATE TABLE `warning_gasPrice_in`;"
+drop_warning_gasPrice_out = "TRUNCATE TABLE `warning_gasPrice_out`;"
+drop_warning_balance_out = "TRUNCATE TABLE `warning_balance_out`;"
+drop_warning_balance_in = "TRUNCATE TABLE `warning_balance_in`;"
+drop_warning_degree_out = "TRUNCATE TABLE `warning_degree_out`;"
+drop_warning_degree_in = "TRUNCATE TABLE `warning_degree_in`;"
 
 def drop_tables(con):
     con.execute(drop_edge)
     con.execute(drop_hyp_malicious)
     con.execute(drop_hyp_same_person)
     con.execute(drop_invoke)
-    con.execute(drop_is_eoa)
     con.execute(drop_is_owner)
-    con.execute(drop_is_smart_contract)
     con.execute(drop_mapping)
     con.execute(drop_net_diff_fact)
     con.execute(drop_node)
@@ -57,6 +71,22 @@ def drop_tables(con):
     con.execute(drop_threshold_degree_out)
     con.execute(drop_contracts_created)
     con.execute(drop_invocaciones)
+    con.execute(drop_transferencias)
+    con.execute(drop_threshold_invocaciones)
+    con.execute(drop_threshold_transferencias)
+    con.execute(drop_degree_in)
+    con.execute(drop_degree_out)
+    con.execute(drop_gasPrice_out)
+    con.execute(drop_gasPrice_in)
+    con.execute(drop_balance_out)
+    con.execute(drop_balance_in)
+    con.execute(drop_warning_contracts_created)
+    con.execute(drop_warning_gasPrice_in)
+    con.execute(drop_warning_gasPrice_out)
+    con.execute(drop_warning_balance_out)
+    con.execute(drop_warning_balance_in)
+    con.execute(drop_warning_degree_out)
+    con.execute(drop_warning_degree_in)
 
 class NetDERKB:
 	NULL_INFO = "null_info"
