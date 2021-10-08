@@ -10,12 +10,12 @@ class ExpressionPlus:
 	def __str__(self):
 		str_terms = []
 		for term in self._terms:
-			print('type(term)', type(term))
-			print('str(term)', str(term))
+			# print('type(term)', type(term))
+			# print('str(term)', str(term))
 			str_terms.append(str(term))
 
 		result = ' + '.join(str_terms)
-		print('result', result)
+		# print('result', result)
 		return result
 
 	def getId(self):
