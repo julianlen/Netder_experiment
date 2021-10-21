@@ -409,7 +409,7 @@ class NetDERChase:
 				result.append(aux_result_mapping)
 
 		con.commit()
-		con.close()
+		# con.close()
 
 		return result
 

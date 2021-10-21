@@ -1,6 +1,5 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-import copy
 import json
 import mariadb
 import portion
@@ -109,19 +108,19 @@ class NetDERKB:
 		# data = data.union(nodes)
 		# data = data.union(edges)
 		self._load_schema()
-		con = self.get_connection()
-		drop_tables(con.cursor())
-		self._load_tuples_id(con)
+		self.con = self.init_connection()
+		drop_tables(self.con.cursor())
+		self._load_tuples_id(self.con)
 		self.add_ont_data(data)
 		# self.update_info(con)
-		con.commit()
-		con.close()
+		self.con.commit()
+		# self.con.close()
 
 
 	def get_config_db(self):
 		return self._config_db
 
-	def get_connection(self):
+	def init_connection(self):
 		with open(self._config_db) as config_json:
 			config_data = json.load(config_json)
 		try:
@@ -136,8 +135,13 @@ class NetDERKB:
 		except mariadb.Error as e:
 			print(f"Error connecting to MariaDB Platform: {e}")
 			sys.exit(1)
-
 		return con
+
+	def get_connection(self):
+		return self.con
+
+	def close_connection(self):
+		self.con.close()
 
 	def _load_tuples_id(self, connection):
 		self._tuples_id = set()
@@ -210,7 +214,7 @@ class NetDERKB:
 		else:
 			success = False
 		con.commit()
-		con.close()
+		# con.close()
 
 		return success
 
@@ -291,7 +295,7 @@ class NetDERKB:
 		data = cur.fetchall()
 		result = Null("z" + str(len(data)))
 		con.commit()
-		con.close()
+		# con.close()
 		return result
 
 	def save_null_info(self, atom, null):
@@ -365,7 +369,7 @@ class NetDERKB:
 							self.add_ont_data({atom})
 
 			con.commit()
-			con.close()
+			# con.close()
 			success = True
 
 		return success

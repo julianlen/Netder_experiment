@@ -103,7 +103,6 @@ class RDBHomomorphism(Homomorphism):
 		query = OntQuery(exist_var = exist_var, ont_cond = atoms)
 		
 		sql_query = self.to_SQL(query)
-
 		var_list = query.get_free_variables()
 
 		con = self._netder_kb.get_connection()
@@ -116,7 +115,7 @@ class RDBHomomorphism(Homomorphism):
 		data = cur.fetchall()
 
 		con.commit()
-		con.close()
+		# con.close()
 
 
 		result = Mapping(var_list, data)

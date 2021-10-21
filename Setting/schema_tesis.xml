@@ -251,7 +251,7 @@
 		4_address
 	</primaryKey>
 	<primaryKey>
-		5_transferencias
+		5_value_transferido
 	</primaryKey>
 </table>
 <table name = "invocaciones">
@@ -381,6 +381,9 @@
 	</primaryKey>
 	<primaryKey>
 		3_block_number
+	</primaryKey>
+	<primaryKey>
+		4_reason
 	</primaryKey>
 </table>
 <table name = "is_owner">
