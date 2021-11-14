@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 
-from Setting.EvaluatorTesis import EvaluatorTesis
+from EvaluatorTesis import EvaluatorTesis
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from datetime import datetime
@@ -30,11 +30,8 @@ from Ontological.Equal import Equal
 config_db_path = os.path.dirname(os.path.realpath(__file__)) + '/' + "configdb_tesis.json"
 schema_path = os.path.dirname(os.path.realpath(__file__)) + '/' + "schema_tesis.xml"
 entire_tx_dataset = os.path.dirname(os.path.realpath(__file__)) + '/' + "2000000to2999999_NormalTransaction.csv"
-# entire_contract_dataset = os.path.dirname(os.path.realpath(__file__)) + '/' + "0to999999_ContractInfo.csv"
 part_tx_dataset = os.path.dirname(os.path.realpath(__file__)) + '/' + "0to499_NormalTransaction"
-# part_contract_dataset = os.path.dirname(os.path.realpath(__file__)) + '/' + "0to499_ContractInfo"
 dummy_tx_dataset = os.path.dirname(os.path.realpath(__file__)) + '/' + "my_transactions"
-# dummy_contract_dataset = os.path.dirname(os.path.realpath(__file__)) + '/' + "my_contracts"
 ground_truth = os.path.dirname(os.path.realpath(__file__)) + '/' + "ground_truth.csv"
 dummy_my_grado_in_out = os.path.dirname(os.path.realpath(__file__)) + '/' + "my_grado_in_out"
 dummy_my_gasPrice_in_out = os.path.dirname(os.path.realpath(__file__)) + '/' + "my_gasPrice_in_out"
@@ -45,9 +42,6 @@ dummy_my_contracts_created_and_transfer = os.path.dirname(os.path.realpath(__fil
 tmax = 2
 
 # ---------------------------------------------------------------------------
-
-# "atoms" lo voy a utilizar luego para crear la BD ontologica
-
 
 global inicio_kb
 global fin_kb
@@ -60,6 +54,7 @@ def main():
     T1_CC = 200
     sub_datasets = 4
     digest = False
+
     #   --------------------------
     #   GETTING & MERGING DATASETS
     #   --------------------------
@@ -367,7 +362,7 @@ def main():
 
         # Gets invocations
         df_invoke = df_transactionInfo_splitted[df_transactionInfo_splitted['callingFunction'] != '0x'].filter(['from', 'to', 'blockNumber', 'sd']).drop_duplicates().reset_index(drop=True)
-        df_invoke.columns = ['2_address', '3_address', '4_block_number', 'sd']
+        df_invoke.columns = ['2_address', '3_address', '4_blockNumber', 'sd']
         df_invoke['1_primary_key'] = df_invoke.swifter.apply(lambda row: hash_row('invoke', row), axis=1)
 
         # Gets the owner of each contracts
@@ -408,24 +403,49 @@ def main():
         df_sds = pd.read_csv('./dataset/sds.csv')
         df_account = pd.read_csv('./dataset/df_account.csv')
         df_threshold_invocaciones = pd.read_csv('./dataset/df_threshold_invocaciones.csv')
+        df_threshold_invocaciones['3_blockNumber'] = df_threshold_invocaciones['3_blockNumber'].astype(str)
+
         df_threshold_transferencias = pd.read_csv('./dataset/df_threshold_transferencias.csv')
+        df_threshold_transferencias['3_blockNumber'] = df_threshold_transferencias['3_blockNumber'].astype(str)
+
         df_transferencias_atom = pd.read_csv('./dataset/df_transferencias_atom.csv')
+        df_transferencias_atom['3_blockNumber'] = df_transferencias_atom['3_blockNumber'].astype(str)
+
         df_invocaciones_atom = pd.read_csv('./dataset/df_invocaciones_atom.csv')
+        df_invocaciones_atom['3_blockNumber'] = df_invocaciones_atom['3_blockNumber'].astype(str)
+
         df_contracts_created_atoms = pd.read_csv('./dataset/df_contracts_created_atoms.csv')
+        df_contracts_created_atoms['3_blockNumber'] = df_contracts_created_atoms['3_blockNumber'].astype(str)
+
         df_thr_degree_out = pd.read_csv('./dataset/df_thr_degree_out.csv')
         df_thr_degree_in = pd.read_csv('./dataset/df_thr_degree_in.csv')
         df_thr_gasPrice_out = pd.read_csv('./dataset/df_thr_gasPrice_out.csv')
         df_thr_gasPrice_in = pd.read_csv('./dataset/df_thr_gasPrice_in.csv')
         df_thr_balance_out = pd.read_csv('./dataset/df_thr_balance_out.csv')
         df_thr_balance_in = pd.read_csv('./dataset/df_thr_balance_in.csv')
+
         df_invoke = pd.read_csv('./dataset/df_invoke.csv')
+        df_invoke['4_blockNumber'] = df_invoke['4_blockNumber'].astype(str)
+
         df_is_owner = pd.read_csv('./dataset/df_is_owner.csv')
+
         df_degree_in = pd.read_csv('./dataset/df_degree_in.csv')
+        df_degree_in['3_blockNumber'] = df_degree_in['3_blockNumber'].astype(str)
+
         df_degree_out = pd.read_csv('./dataset/df_degree_out.csv')
+        df_degree_out['3_blockNumber'] = df_degree_out['3_blockNumber'].astype(str)
+
         df_gas_price_out_atom = pd.read_csv('./dataset/df_gas_price_out_atom.csv')
+        df_gas_price_out_atom['3_blockNumber'] = df_gas_price_out_atom['3_blockNumber'].astype(str)
+
         df_gas_price_in_atom = pd.read_csv('./dataset/df_gas_price_in_atom.csv')
+        df_gas_price_in_atom['3_blockNumber'] = df_gas_price_in_atom['3_blockNumber'].astype(str)
+
         df_balance_out_atom = pd.read_csv('./dataset/df_balance_out_atom.csv')
+        df_balance_out_atom['3_blockNumber'] = df_balance_out_atom['3_blockNumber'].astype(str)
+
         df_balance_in_atom = pd.read_csv('./dataset/df_balance_in_atom.csv')
+        df_balance_in_atom['3_blockNumber'] = df_balance_in_atom['3_blockNumber'].astype(str)
         print('End reading datasets')
 
     # Dummy ground truth
@@ -448,15 +468,9 @@ def main():
 
     print('Atoms and TGDs - START')
     tgd_counter = 0
-    atom_account_a1 = Atom('account', [Variable('A1')])
-    atom_hyp_same_person_b1 = Atom('hyp_same_person', [Variable('A1'), Variable('A2'), Variable('B1')])
-    atom_hyp_same_person_b2 = Atom('hyp_same_person', [Variable('A1'), Variable('A2'), Variable('B2')])
-
     atom_is_owner_a1_c1 = Atom('is_owner', [Variable('A1'), Variable('C1')])
     atom_different_accounts_a1_a2 = Distinct(Variable('A1'), Variable('A2'))
     atom_gre_block_numbers_b1_b = GRE(Variable('B1'), Variable('B'))
-    atom_gre_block_numbers_b_b1 = GRE(Variable('B'), Variable('B1'))
-    atom_gre_block_numbers_b1_b2 = GRE(Variable('B1'), Variable('B2'))
     atom_invoke_a2_c1 = Atom('invoke', [Variable('A2'), Variable('C1'), Variable('B1')])
     atom_invoke_a1_c1 = Atom('invoke', [Variable('A1'), Variable('C1'), Variable('B1')])
     atom_is_owner_a2_c1 = Atom('is_owner', [Variable('A2'), Variable('C1')])
@@ -468,16 +482,16 @@ def main():
     atom_gre_threshold_grado_in = GRE(Variable('T_gr_in'), Variable('G_in'))
     atom_warning_degree_in = Atom('warning_degree_in', [Variable('SD'), Variable('B'), Variable('A1')])
 
-    # R2.1.A) grado_in(A1, SD, B, G_in) & threshold_grado_In(A1,SD, T_gr_in) & (G_in > T_gr_in) → warning_gin(A1, B, SD)
+    # R2.1.A) grado_in(SD, B, A1, G_in) & threshold_grado_In(SD, A1, T_gr_in) & (G_in > T_gr_in) → warning_gin(SD, B, A1)
     tgd_grado_in_rule = NetDERTGD(rule_id=tgd_counter,
                                         ont_body=[atom_grado_in, atom_threshold_grado_in, atom_gre_grado_in_threshold], ont_head=[atom_warning_degree_in])
     tgd_counter+=1
 
     exp = ExpressionPlus(terms=[Variable('B'), Constant('1')])
     atom_next_block = Equal(Variable('B1'), exp)
+    hyp_malicious_a1_b1_grado_in = Atom('hyp_malicious', [Variable('A1'), Variable('B1'), Constant('Grado_In_burst')])
 
     # R2.1.B) warning_gin(A1, B, SD) & grado_in(A1, SD, B1, G_in) & threshold_grado_In(A1,SD, T_gr_in) & (G_in < T_gr_in)  & (B1 = B+1) → hyp_malicioso(A1, B1)
-    hyp_malicious_a1_b1_grado_in = Atom('hyp_malicious', [Variable('A1'), Variable('B1'), Constant('Grado_In_burst')])
     tgd_grado_in_malicious_rule = NetDERTGD(rule_id=tgd_counter,
                                             ont_body=[atom_warning_degree_in, atom_grado_in_b1, atom_threshold_grado_in,
                                                       atom_gre_threshold_grado_in, atom_next_block], ont_head=[hyp_malicious_a1_b1_grado_in])
@@ -536,15 +550,14 @@ def main():
     atom_warning_balance_out = Atom('warning_balance_out', [Variable('SD'), Variable('B'), Variable('A1')])
 
     # R.3.2.A) balance_out(SD, B, A, Bal_out) & threshold_balance_out(SD, A, T_bal_out) & (Bal_out > T_bal_out) → warning_bout(SD, B, A)
-
     tgd_balance_out_rule = NetDERTGD(rule_id=tgd_counter,
                                      ont_body=[atom_balance_out, atom_threshold_balance_out, atom_gre_balance_out_threshold],
                                      ont_head=[atom_warning_balance_out])
 
     tgd_counter += 1
 
-    # R.3.2.B) warning_bout(SD, B, A) & balance_out(SD, B1, A, Bal_out) & threshold_balance_out(SD, A, T_bal_out) & (Bal_out < T_bal_out) & (B1 = B+1) → hyp_malicioso(A, B1)
     hyp_malicious_a1_b1_balance_out = Atom('hyp_malicious',[Variable('A1'), Variable('B1'), Constant('Balance_Out_burst')])
+    # R.3.2.B) warning_bout(SD, B, A) & balance_out(SD, B1, A, Bal_out) & threshold_balance_out(SD, A, T_bal_out) & (Bal_out < T_bal_out) & (B1 = B+1) → hyp_malicioso(A, B1)
     tgd_balance_out_malicious_rule = NetDERTGD(rule_id=tgd_counter,
                                                ont_body=[atom_warning_balance_out, atom_balance_out_b1,
                                                          atom_threshold_balance_out,
@@ -565,8 +578,9 @@ def main():
                                    ont_head=[atom_warning_gasPrice_in])
     tgd_counter += 1
 
-    # R.4.1.B)  warning_gp_in(SD, B, A1) & gasPrice_in(SD, B1, A1,  GP_in) & threshold_gp_in(A1,SD, TGP_in) & (GP_in < Tht_GP_in) & (B1 = B+1) → hyp_malicioso(A1, B1)
     hyp_malicious_a1_b1_gasPrice_in = Atom('hyp_malicious',[Variable('A1'), Variable('B1'), Constant('GasPrice_In_burst')])
+
+    # R.4.1.B)  warning_gp_in(SD, B, A1) & gasPrice_in(SD, B1, A1,  GP_in) & threshold_gp_in(A1,SD, TGP_in) & (GP_in < Tht_GP_in) & (B1 = B+1) → hyp_malicioso(A1, B1)
     tgd_gasPrice_in_malicious_rule = NetDERTGD(rule_id=tgd_counter,
                                                ont_body=[atom_warning_gasPrice_in, atom_gasPrice_in_b1,
                                                          atom_threshold_gasPrice_in,
@@ -598,54 +612,45 @@ def main():
                                                 ont_head=[hyp_malicious_a1_b1_gasPrice_out])
     tgd_counter += 1
 
-    # R6.1 hyp_malicioso(A1, B) & es_owner(A1, C1) & A1 != A2 & invoca(A2, C1, B1) & (B < B1) → hyp_misma_persona(A1, A2, B1)
+    # R6.1 hyp_malicioso(A1, B, M) & es_owner(A1, C1) & A1 != A2 & invoca(A2, C1, B1) & (B < B1) → hyp_misma_persona(A1, A2, B1, M)
+    atom_hyp_malicious_a1_b_m = Atom('hyp_malicious', [Variable('A1'), Variable('B'), Variable('M')])
+    atom_same_person_a1_a2_b1_m = Atom('hyp_same_person', [Variable('A1'), Variable('A2'), Variable('B1'), Variable('M')])
     tgd_invoke_account_rule = NetDERTGD(rule_id=tgd_counter,
-                                        ont_body=[(Atom('hyp_malicious', [Variable('A1'), Variable('B'), Variable('M')])),
-                                                  atom_is_owner_a1_c1,
-                                                  atom_invoke_a2_c1, atom_gre_block_numbers_b1_b,
-                                                  atom_different_accounts_a1_a2], ont_head=[atom_hyp_same_person_b1])
+                                        ont_body=[
+                                            atom_hyp_malicious_a1_b_m,
+                                            atom_is_owner_a1_c1,
+                                            atom_invoke_a2_c1, atom_gre_block_numbers_b1_b,
+                                            atom_different_accounts_a1_a2], ont_head=[
+            atom_same_person_a1_a2_b1_m])
     tgd_counter += 1
 
-    # R6.3 hyp_malicioso(A1, B) & invoca(A1, C1, B1) & (B < B1) & es_owner(A2, C1) & (A1 != A2)  →  hyp_malicioso(A2, B1)
-    atom_hyp_malicious_a1_b = Atom('hyp_malicious', [Variable('A1'), Variable('B'), Variable('M')])
+    # R6.3 hyp_malicioso(A1, B, M) & invoca(A1, C1, B1) & (B < B1) & es_owner(A2, C1) & (A1 != A2)  →  hyp_malicioso(A2, B1, M)
+    atom_hyp_malicious_a2_b1_m = Atom('hyp_malicious', [Variable('A2'), Variable('B1'), Variable('M')])
     tgd_invoke_malicious_rule = NetDERTGD(rule_id=tgd_counter,
-                                          ont_body=[atom_hyp_malicious_a1_b,
+                                          ont_body=[atom_hyp_malicious_a1_b_m,
                                                     atom_invoke_a1_c1, atom_is_owner_a2_c1,
                                                     atom_gre_block_numbers_b1_b,
-                                                    atom_different_accounts_a1_a2], ont_head=[
-            (Atom('hyp_malicious', [Variable('A2'), Variable('B1'), Variable('M')]))])
+                                                    atom_different_accounts_a1_a2], ont_head=[atom_hyp_malicious_a2_b1_m])
     tgd_counter += 1
 
     atom_hyp_sc_malicioso_c1 = Atom('hyp_malicious', [Variable('C1'), Variable('B'), Variable('M')])
-    atom_hyp_malicioso_a1_b = Atom('hyp_malicious', [Variable('A1'), Variable('B'), Variable('M')])
     atom_is_owner_a1_c2 = Atom('is_owner', [Variable('A1'), Variable('C2')])
     atom_invoke_a2_c2 = Atom('invoke', [Variable('A2'), Variable('C2'), Variable('B1')])
     atom_different_contracts_c1_c2 = Distinct(Variable('C1'), Variable('C2'))
 
-    # R6.2 hyp_malicioso(C1, B) & es_owner(A1, C1) & es_owner(A1, C2) & C1 != C2 & invoca(A2, C2, B1) & (A1 != A2) & (B < B1) → hyp_misma_persona(A1, A2, B1)
+    # R6.2 hyp_malicioso(C1, B, M) & es_owner(A1, C1) & es_owner(A1, C2) & C1 != C2 & invoca(A2, C2, B1) & (A1 != A2) & (B < B1) → hyp_misma_persona(A1, A2, B1, M)
     tgd_invoke_contract_rule = NetDERTGD(rule_id=tgd_counter,
                                          ont_body=[atom_hyp_sc_malicioso_c1,
                                                    atom_is_owner_a1_c1, atom_is_owner_a1_c2,
                                                    atom_invoke_a2_c2, atom_different_contracts_c1_c2,
-                                                   atom_gre_block_numbers_b1_b, atom_different_accounts_a1_a2], ont_head=[atom_hyp_same_person_b1])
-    tgd_counter += 1
-
-    # TODO: REVISAR ESTO
-    # E A2 hyp_misma_persona(A1,A2)
-    ont_head_existential = [Atom('account', [Variable('A2')]),
-                            Atom('hyp_same_person', [Variable('A1'), Variable('A2'), Variable('B')])]
-
-    # R6.4 hyp_malicioso(A1,B) → E A2 hyp_misma_persona(A1,A2, B)
-    tgd_exist_same_account = NetDERTGD(rule_id=tgd_counter,
-                                       ont_body=[atom_account_a1, atom_hyp_malicioso_a1_b],
-                                       ont_head=ont_head_existential)
+                                                   atom_gre_block_numbers_b1_b, atom_different_accounts_a1_a2],
+                                         ont_head=[
+                                             Atom('hyp_same_person',[Variable('A1'), Variable('A2'), Variable('B1'), Variable('M')])])
     tgd_counter += 1
 
     # T1 = 10,000, T2 = T3 = 0.5,
     # T2’ = T2*size(SC_SET)
     # T3’ = T3*size(SC_SET)
-
-
 
     # R7.1.A) contracts_created(SD, B, A1, Contratos_creados) & (T1 < Contratos_creados) → Warning_cc(SD, B, A1)
     atom_contracts_created = Atom('contracts_created', [Variable('SD'), Variable('B'), Variable('A1'), Variable('Contratos_creados')])
@@ -681,36 +686,59 @@ def main():
                                                   atom_threshold_transferencias, atom_gr_threshold_transferencias],
                                         ont_head=[atom_hyp_malicious_a1_b1_useless_transf])
 
-    atom_invoke_a3_c2_b1 = Atom('invoke', [Variable('A3'), Variable('C2'), Variable('B1')])
-    atom_invoke_a3_c1_b1 = Atom('invoke', [Variable('A3'), Variable('C1'), Variable('B1')])
+    tgd_counter += 1
+
 
     # hyp_misma_persona(A1,A2, B2) & hyp_malicioso(C1, B) & es_owner(A1,C1) & es_owner(A1,C2) & invoca(A3,C2, B1) & (C1 != C2) & (B2 < B1) & (B < B1) → A2 = A3
-    egd1 = NetDEREGD(rule_id=tgd_counter,
-                     ont_body=[atom_hyp_same_person_b2, atom_hyp_sc_malicioso_c1, atom_is_owner_a1_c1, atom_is_owner_a1_c2,
-                               atom_invoke_a3_c2_b1, atom_different_contracts_c1_c2, atom_gre_block_numbers_b1_b2, atom_gre_block_numbers_b1_b],
-                     head=[Variable('A2'), Variable('A3')])
-
-    tgd_counter += 1
+    # egd1 = NetDEREGD(rule_id=tgd_counter,
+    #                  ont_body=[atom_hyp_same_person_b2, atom_hyp_sc_malicioso_c1, atom_is_owner_a1_c1, atom_is_owner_a1_c2,
+    #                            atom_invoke_a3_c2_b1, atom_different_contracts_c1_c2, atom_gre_block_numbers_b1_b2, atom_gre_block_numbers_b1_b],
+    #                  head=[Variable('A2'), Variable('A3')])
+    #
+    # tgd_counter += 1
 
     # hyp_misma_persona(A1,A2,B2) & hyp_malicioso(A1, B) & invoca(A3,C1, B1) & es_owner(A1,C1) & (B2 < B1) & (B < B1) → A2 = A3
-    egd2 = NetDEREGD(rule_id=tgd_counter, ont_body=[atom_hyp_same_person_b2, atom_hyp_malicioso_a1_b, atom_invoke_a3_c1_b1, atom_is_owner_a1_c1,
-                                          atom_different_contracts_c1_c2,
-                                          atom_gre_block_numbers_b1_b, atom_gre_block_numbers_b1_b2],
+    # egd2 = NetDEREGD(rule_id=tgd_counter, ont_body=[atom_hyp_same_person_b2, atom_hyp_malicioso_a1_b, atom_invoke_a3_c1_b1, atom_is_owner_a1_c1,
+    #                                       atom_different_contracts_c1_c2,
+    #                                       atom_gre_block_numbers_b1_b, atom_gre_block_numbers_b1_b2],
+    #                  head=[Variable('A2'), Variable('A3')])
+    #
+
+
+    # R6.4 hyp_malicioso(A1,B, M) → E A2 hyp_misma_persona_By_transitivity(A1,A2(null), B)
+    atom_same_person_by_transitivity = Atom('hyp_same_person_by_transitivity', [Variable('A1'), Variable('A2'), Variable('B')])
+
+    tgd_exist_same_account = NetDERTGD(rule_id=tgd_counter,
+                                       ont_body=[atom_hyp_malicious_a1_b_m],
+                                       ont_head= [atom_same_person_by_transitivity])
+    tgd_counter += 1
+
+    # # hyp_misma_persona_By_transitivity(A1,A2(null), B) & invoca(A3,C1, B1) & es_owner(A1,C1) & (B < B1) → A2(null) = A3
+    atom_invoke_a3_c1_b1 = Atom('invoke', [Variable('A3'), Variable('C1'), Variable('B1')])
+
+
+    egd3 = NetDEREGD(rule_id=tgd_counter, ont_body=[atom_same_person_by_transitivity,
+                                          atom_invoke_a3_c1_b1,
+                                          atom_is_owner_a1_c1, atom_gre_block_numbers_b1_b],
                      head=[Variable('A2'), Variable('A3')])
 
     tgd_counter += 1
 
-    # hyp_misma_persona(A1,A2, B2) & invoca(A3,C1, B1) & es_owner(A1,C1) & (B2 < B1) → A2 = A3
-    egd3 = NetDEREGD(rule_id=6, ont_body=[atom_hyp_same_person_b2, atom_invoke_a3_c1_b1,
-                                          atom_is_owner_a1_c1, atom_gre_block_numbers_b1_b2],
-                     head=[Variable('A2'), Variable('A3')])
+    # hyp_malicious(A1,B, M) & hyp_same_person_by_transitivity(A1,A2,B1) -> hyp_malicious(A2, B1, 'By_transitivity')
+    atom_same_person_a1_a2_b1_m = atom_same_person_a1_a2_b1_m
+    tgd_same_person_malicious_v2_rule = NetDERTGD(rule_id=tgd_counter,
+                                                  ont_body=[atom_hyp_malicious_a1_b_m, atom_same_person_by_transitivity],
+                                                  ont_head=[(Atom('hyp_malicious', [Variable('A2'), Variable('B1'),
+                                                                                    Constant('By_transitivity')]))])
 
     tgd_counter += 1
 
-    # hyp_malicious(A1,B) & hyp_same_person(A2,B1) -> hyp_malicious(A2, B1)
+    # hyp_malicious(A1,B, M) & hyp_same_person(A1,A2,B1) -> hyp_malicious(A2, B1)
+    atom_same_person_a1_a2_b1_m = atom_same_person_a1_a2_b1_m
     tgd_same_person_malicious_v1_rule = NetDERTGD(rule_id=tgd_counter,
-                                                  ont_body=[atom_hyp_malicioso_a1_b, atom_hyp_same_person_b1],
-                                                  ont_head=[(Atom('hyp_malicious', [Variable('A2'), Variable('B1'), Constant('Same_person')]))])
+                                                  ont_body=[atom_hyp_malicious_a1_b_m, atom_same_person_a1_a2_b1_m],
+                                                  ont_head=[(Atom('hyp_malicious', [Variable('A2'), Variable('B1'),
+                                                                                    Constant('Same_person')]))])
 
     tgd_counter += 1
     #
@@ -756,32 +784,41 @@ def main():
     tgd_invoke_malicious_rule,
     tgd_invoke_contract_rule,
     tgd_exist_same_account,
-    tgd_same_person_malicious_v1_rule]
+    tgd_same_person_malicious_v1_rule,
+    tgd_same_person_malicious_v2_rule]
 
     useless_contracts_creation = [
     tgd_contracts_created_rule,
     tgd_invocaciones_rule,
     tgd_transferencias_rule ]
 
+    egd_same_accounts = [egd3]
     burst_and_same_accounts = burst_tgds + same_accounts_tgds
     same_accounts_and_useless_creation = same_accounts_tgds + useless_contracts_creation
-    useless_creaation_and_burst = useless_contracts_creation + burst_tgds
-    all_tgds = burst_tgds + same_accounts_tgds + useless_creaation_and_burst
+    useless_creation_and_burst = useless_contracts_creation + burst_tgds
+    all_tgds = burst_tgds + same_accounts_tgds + useless_creation_and_burst
 
-    kb = NetDERKB(data=set(), net_diff_graph=[], config_db=config_db_path, schema_path=schema_path,
-                                netder_tgds=[], netder_egds=[], netdiff_lrules=[],
-                  netdiff_grules=[])
+    kb = NetDERKB(data=set(), net_diff_graph=[], config_db=config_db_path, schema_path=schema_path, netder_tgds=all_tgds, netder_egds=egd_same_accounts, netdiff_lrules=[], netdiff_grules=[])
 
     print('Atoms and TGDs - END')
 
+    query2 = NetDERQuery(ont_cond=[atom_hyp_malicious_a1_b_m], time=(tmax, tmax))
+    actual_query = query2
     evaluator = EvaluatorTesis(pd.read_csv(ground_truth))
     cur = kb.get_connection().cursor()
     kb.get_connection().commit()
     engine = create_engine("mariadb+mariadbconnector://user:@127.0.0.1:3306/test_tesis")
 
     print('CHASE - START')
+    print("NetDER Query")
+    print(actual_query)
+    print('-----')
+
     for sd in df_sds['sd'].unique():
         print('\nsd: ' + str(sd))
+
+        # Clean old tables not used in future TGDs
+        kb.clean_tables(kb.get_connection().cursor())
 
         #   Account(Address)
         df_account_sd = df_account[df_account['sd'] == sd].filter(['1_primary_key', '2_address'])
@@ -847,7 +884,7 @@ def main():
         df_thr_balance_out_sd = df_thr_balance_out[df_thr_balance_out['2_sd'] == sd].filter(['1_primary_key', '2_sd', '3_address', '4_thr_balance_out'])
 
         #   invoke(Address, Address, BlockNumber)
-        df_invoke_sd = df_invoke[df_invoke['sd'] == sd].filter(['1_primary_key', '2_address', '3_address', '4_block_number'])
+        df_invoke_sd = df_invoke[df_invoke['sd'] == sd].filter(['1_primary_key', '2_address', '3_address', '4_blockNumber'])
 
         #   Is_owner(Address, Address,)
         df_is_owner_sd = df_is_owner[df_is_owner['sd'] == sd].filter(['1_primary_key', '2_address', '3_address'])
@@ -877,18 +914,12 @@ def main():
 
         chase = NetDERChase(kb, tmax)
 
-        query1 = NetDERQuery(ont_cond=[atom_hyp_same_person_b1], time=(tmax, tmax))
-        query2 = NetDERQuery(ont_cond=[atom_hyp_malicioso_a1_b], time=(tmax, tmax))
-        actual_query = query2
         inicio_q = datetime.now()
         answers = chase.answer_query(actual_query, 1)
         fin_q = datetime.now()
-        print("NetDER Query")
-        print(actual_query)
-        print('-----')
-        for ans in answers:
-            for key in ans.keys():
-                print("Variable", key, "instanciada con valor", ans[key].getValue())
+        # for ans in answers:
+        #     for key in ans.keys():
+        #         print("Variable", key, "instanciada con valor", ans[key].getValue())
 
         print(evaluator.evaluate(answers, df_account_sd, sd))
 
@@ -968,13 +999,3 @@ def delete_dataset(path):
 if __name__ == "__main__":
     main()
     exit(0)
-
-
-#     print('------')
-#     coso = str(id) + ',' + str(hash(_hash(_from))) + ',' + str(hash(_hash(_to))) + ','
-#     print(hash(_hash(coso)))
-#     print(coso)
-
-#     print('------')
-#
-#

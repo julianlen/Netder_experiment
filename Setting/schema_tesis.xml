@@ -380,7 +380,7 @@
 		2_address
 	</primaryKey>
 	<primaryKey>
-		3_block_number
+		3_blockNumber
 	</primaryKey>
 	<primaryKey>
 		4_reason
@@ -408,7 +408,7 @@
 		3_address
 	</primaryKey>
 	<primaryKey>
-		4_block_number
+		4_blockNumber
 	</primaryKey>
 </table>
 <table name = "hyp_same_person">
@@ -422,7 +422,24 @@
 		3_address
 	</primaryKey>
 	<primaryKey>
-		4_block_number
+		4_blockNumber
+	</primaryKey>
+	<primaryKey>
+		5_reason
+	</primaryKey>
+</table>
+<table name = "hyp_same_person_by_transitivity">
+	<primaryKey>
+		1_primary_key
+	</primaryKey>
+	<primaryKey>
+		2_address
+	</primaryKey>
+	<primaryKey>
+		3_address
+	</primaryKey>
+	<primaryKey>
+		4_blockNumber
 	</primaryKey>
 </table>
 </root>

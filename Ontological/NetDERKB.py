@@ -399,6 +399,35 @@ class NetDERKB:
 		NetDERKB.counter_graph += 1
 		self._net_diff_graph = net_diff_graph
 
+	def clean_tables(self, con):
+		con.execute(drop_edge)
+		con.execute(drop_net_diff_fact)
+		con.execute(drop_node)
+		con.execute(drop_threshold_balance_in)
+		con.execute(drop_threshold_balance_out)
+		con.execute(drop_threshold_gasPrice_in)
+		con.execute(drop_threshold_gasPrice_out)
+		con.execute(drop_threshold_degree_in)
+		con.execute(drop_threshold_degree_out)
+		con.execute(drop_contracts_created)
+		con.execute(drop_invocaciones)
+		con.execute(drop_transferencias)
+		con.execute(drop_threshold_invocaciones)
+		con.execute(drop_threshold_transferencias)
+		con.execute(drop_degree_in)
+		con.execute(drop_degree_out)
+		con.execute(drop_gasPrice_out)
+		con.execute(drop_gasPrice_in)
+		con.execute(drop_balance_out)
+		con.execute(drop_balance_in)
+		con.execute(drop_warning_contracts_created)
+		con.execute(drop_warning_gasPrice_in)
+		con.execute(drop_warning_gasPrice_out)
+		con.execute(drop_warning_balance_out)
+		con.execute(drop_warning_balance_in)
+		con.execute(drop_warning_degree_out)
+		con.execute(drop_warning_degree_in)
+
 	def update_info(self, connection):
 		pass
 		# self._update_graph(connection)
