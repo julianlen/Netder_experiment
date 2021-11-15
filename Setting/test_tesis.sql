@@ -319,7 +319,7 @@ CREATE TABLE `hyp_same_person_by_transitivity` (
   `1_primary_key` text NOT NULL,
   `2_address` text NOT NULL,
   `3_address` text NOT NULL,
-  `4_blockNumber` text NOT NULL
+  `4_blockNumber` int unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------

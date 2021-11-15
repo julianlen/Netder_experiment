@@ -52,7 +52,7 @@ global fin_din
 
 def main():
     T1_CC = 200
-    sub_datasets = 4
+    sub_datasets = 2880
     digest = False
 
     #   --------------------------
