@@ -53,8 +53,7 @@ global fin_din
 def main():
     T1_CC = 200
     # 1 min -> 4bloques
-    # sds = [4, 120, 240, 480, 720, 960, 1440, 2880] # Every 1mins, 1 hr, 2hr, 3hr, 4hr, 6hr, 12hr
-    sds = [4]
+    sds = [4, 120, 240, 480, 720, 960, 1440, 2880] # Every 1mins, 1 hr, 2hr, 3hr, 4hr, 6hr, 12hr
     # sub_datasets = 5760
 
     #   --------------------------

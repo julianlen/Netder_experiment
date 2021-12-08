@@ -192,6 +192,10 @@ class NetDERChase:
 
 		return aux_result
 
+	# for mapping_item in mappings:
+	# 	for key in mapping_item:
+	# 		mapping[key] = mapping_item[key]
+
 	def applyStepEGDChase(self, connection, egd, time):
 		success = True
 		#se busca si existe algun mapeo del cuerpo
@@ -200,9 +204,9 @@ class NetDERChase:
 		#se verifica si hay algun mapeo
 		if len(mappings) > 0:
 			#a continuacion, se verifica que en cada mapeo se cumpla la restriccion de la cabeza (por ejemplo, X = Y)
-			key_index = 0
-			while key_index < len(mappings):
-				for key in mappings[key_index]:
+			# key_index = 0
+			for mapping_item in mappings:
+				for key in mapping_item.keys():
 					if not self._exists(connection, str(egd.get_id()) + str(key)):
 						new_mapping = {}
 						#para cada mapeo la verificacion se realiza en tres pasos:
@@ -222,37 +226,37 @@ class NetDERChase:
 						head = copy.deepcopy(egd.get_head())
 						#paso (1)
 						cloned_ont_body1 = copy.deepcopy(egd.get_ont_body())
-						cloned_net_body1 = copy.deepcopy(egd.get_net_body())
+						# cloned_net_body1 = copy.deepcopy(egd.get_net_body())
 						cloned_ont_body2 = copy.deepcopy(egd.get_ont_body())
-						cloned_net_body2 = copy.deepcopy(egd.get_net_body())
+						# cloned_net_body2 = copy.deepcopy(egd.get_net_body())
 						
 						for atom in cloned_ont_body1:
 							#paso (2) en la parte ontologica
 							atom.map({head[0].getId(): head[1]})
 							#paso (3) en la parte ontologica
-							atom.map(mappings[key_index][key])
+							atom.map(mapping_item[key])
 
-						for nct in cloned_net_body1:
-							#paso (2) en la parte de red
-							nct.getComponent().map({head[0].getId(): head[1]})
-							#paso (3) en la parte de red
-							nct.getComponent().map(mappings[key_index][key])
+						# for nct in cloned_net_body1:
+						# 	#paso (2) en la parte de red
+						# 	nct.getComponent().map({head[0].getId(): head[1]})
+						# 	#paso (3) en la parte de red
+						# 	nct.getComponent().map(mappings[key_index][key])
 
 						head = copy.deepcopy(egd.get_head())
 
-						
+
 						for atom in cloned_ont_body2:
 							#paso (4) en la parte ontologica
 							atom.map({head[1].getId(): head[0]})
 							#paso (5) en la parte ontologica
-							atom.map(mappings[key_index][key])
+							atom.map(mapping_item[key])
 						
-						for nct in cloned_net_body2:
-							#paso (4) en la parte de red
-							nct.getComponent().map({head[1].getId(): head[0]})
-							#paso (5) en la parte de red
-							nct.getComponent().map(mappings[key_index][key])
-							
+						# for nct in cloned_net_body2:
+						# 	#paso (4) en la parte de red
+						# 	nct.getComponent().map({head[1].getId(): head[0]})
+						# 	#paso (5) en la parte de red
+						# 	nct.getComponent().map(mappings[key_index][key])
+						#
 
 						for index in range(0, len(cloned_ont_body1)):
 							term_i = 0
@@ -279,38 +283,35 @@ class NetDERChase:
 										#paso (6.4) para la parte ontologica
 										success = False
 										break
-										break
-
 								term_i = term_i + 1
-						
-						
+
+						# if success:
+							# for index in range(0, len(cloned_net_body1)):
+							# 	term_i = 0
+							# 	for term in cloned_net_body1[index].getComponent().get_terms():
+							# 		#paso (6.2) para la parte de red
+							# 		other_term = cloned_net_body2[index].getComponent().get_terms()[term_i]
+							# 		if term.getId() != other_term.getId():
+							# 			if term.can_be_instanced():
+							# 				if other_term.can_be_instanced() and term.getValue() < other_term.getValue():
+							# 					#reemplazar "other_term" por "term" ya que "term" esta lexicograficamente antes "other_term"
+							# 					new_mapping[other_term.getValue()] = term
+							# 				else:
+							# 					#reemplazar "term" por "other_term" ya que "other_term" esta lexicograficamente antes "term"
+							# 					new_mapping[term.getValue()] = other_term
+							#
+							# 			#paso (6.2) para la parte de red
+							# 			elif other_term.can_be_instanced():
+							# 				#se construye un mapeo para actualizar la BD
+							# 				new_mapping[other_term.getValue()] = term
+							# 			#paso (6.3) para la parte de red
+							# 			#elif (not term.getValue() == cloned_net_body2[index].getComponent().get_terms()[term_i].getValue()):
+							# 			else:
+							# 				#paso (6.4) para la parte de red
+							# 				success = False
+							# 				break
+							# 		term_i = term_i + 1
 						if success:
-							for index in range(0, len(cloned_net_body1)):
-								term_i = 0
-								for term in cloned_net_body1[index].getComponent().get_terms():
-									#paso (6.2) para la parte de red
-									other_term = cloned_net_body2[index].getComponent().get_terms()[term_i]
-									if term.getId() != other_term.getId():
-										if term.can_be_instanced():
-											if other_term.can_be_instanced() and term.getValue() < other_term.getValue():
-												#reemplazar "other_term" por "term" ya que "term" esta lexicograficamente antes "other_term"
-												new_mapping[other_term.getValue()] = term
-											else:
-												#reemplazar "term" por "other_term" ya que "other_term" esta lexicograficamente antes "term"
-												new_mapping[term.getValue()] = other_term
-										
-										#paso (6.2) para la parte de red
-										elif other_term.can_be_instanced():
-											#se construye un mapeo para actualizar la BD
-											new_mapping[other_term.getValue()] = term
-										#paso (6.3) para la parte de red
-										#elif (not term.getValue() == cloned_net_body2[index].getComponent().get_terms()[term_i].getValue()):
-										else:
-											#paso (6.4) para la parte de red
-											success = False
-											break
-									term_i = term_i + 1
-						if (success):
 							#si la EGD se safisface para el mapeo body_mapping[key_list[key_index]], se actualizan los nulls (en caso de ser necesario)
 							success_un = self._kb.update_nulls(new_mapping)
 							self._save(connection, str(egd.get_id()) + str(key))
@@ -318,13 +319,13 @@ class NetDERChase:
 							if success_un:
 								#se obtienen nuevamente los mapeos debido que hubo una actualizacion de los datos, se reinicia "body_mapping", "key_list" y "key_index" 
 								mappings = self.get_body_mapping(egd, time)
-								key_index = 0
+								# key_index = 0
 							else:
-								key_index += 1
+								continue
 						else:
 							break
 					else:
-						key_index += 1
+						continue
 
 		return success
 
