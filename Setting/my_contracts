@@ -1,0 +1,3 @@
+address,createdBlockNumber,createdTimestamp,createdTransactionHash,creator,creatorIsContract,createValue,creationCode,contractCode
+cm3,1,ts1,txHash1,a7,false,1,creationSospechoso,codeSospechoso
+c4,1,ts1,txHash1,a7,false,1,creationNoSospechoso,codeNoSospechoso

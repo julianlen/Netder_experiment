@@ -1,19 +1,18 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from Diffusion_Process.NetDiffNode import NetDiffNode
-from Diffusion_Process.NetDiffEdge import NetDiffEdge
 from Diffusion_Process.NetDiffGraphElement import NetDiffGraphElement
 
 class NetDiffGraph(NetDiffGraphElement):
 
 	def __init__(self, id, nodes, edges):
 		self._id = id
-		self._netDiffNodes = []
-		self._netDiffEdges = []
+		self._netDiffNodes = set()
+		self._netDiffEdges = set()
 		for node in nodes:
-			self._netDiffNodes.append(node)
+			self._netDiffNodes.add(node)
 		for edge in edges:
-			self._netDiffEdges.append(edge)
+			self._netDiffEdges.add(edge)
 
 	def to_json_string(self):
 		result = '{"nodes": ['
@@ -21,7 +20,6 @@ class NetDiffGraph(NetDiffGraphElement):
 			result = result + node.to_json_string() + ","
 		result = result[: (len(result) - 1)]
 		result = result + '], "edges": ['
-		#result = result + '], "links": ['
 
 		for edge in self._netDiffEdges:
 			result = result + edge.to_json_string() + ","
@@ -31,25 +29,24 @@ class NetDiffGraph(NetDiffGraphElement):
 
 		return result
 
-	def get_labels():
+	def get_labels(self):
 		return NetDiffGraph._labels
 
 	def get_components(self):
-		return self._netDiffNodes + self._netDiffEdges
+		return self._netDiffNodes.union(self._netDiffEdges)
 
 	def getNodes(self):
 		return self._netDiffNodes
 
 	def add_node(self, node):
-		if not node in self._netDiffNodes:
-			self._netDiffNodes.append(node)
+		self._netDiffNodes.add(node)
+			
 	
 	def getEdges(self):
 		return self._netDiffEdges
 
 	def add_edge(self, edge):
-		if not edge in self._netDiffEdges:
-			self._netDiffEdges.append(edge)
+		self._netDiffEdges.add(edge)
 
 	def getId(self):
 		return self._id

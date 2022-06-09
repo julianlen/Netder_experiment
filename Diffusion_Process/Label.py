@@ -12,4 +12,4 @@ class Label(ABC):
 		return result
 
 	def __str__(self):
-		return self._value
+		return str(self._value)

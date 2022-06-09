@@ -1,25 +1,15 @@
+from Ontological.OntQuery import OntQuery
 import copy
 
-class NetDERQuery:
+class NetDERQuery(OntQuery):
 
 	def __init__(self, exist_var = [], ont_cond = [], net_cond = [], global_cond = [], time = []):
-		self._exist_var = []
-		self._ont_cond = ont_cond
-		for var in exist_var:
-			for atom in self._ont_cond:
-				if var in atom.get_terms():
-					self._exist_var.append(var)
-					break
+		super().__init__(exist_var, ont_cond)
 
 		self._net_cond = net_cond
 		self._global_cond = global_cond
 		self._time = time
 
-	def get_exist_var(self):
-		return self._exist_var
-
-	def get_ont_body(self):
-		return self._ont_cond
 
 	def get_net_body(self):
 		return self._net_cond

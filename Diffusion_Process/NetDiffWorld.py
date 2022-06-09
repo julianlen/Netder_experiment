@@ -24,6 +24,9 @@ class NetDiffWorld:
 				lwanted = l
 				bwanted = bnd
 				break
+		if bwanted is None:
+			print('label', label)
+			print('interval', interval)
 		bnd = bwanted & interval
 		self._world.remove((lwanted, bwanted))
 		self._world.append((lwanted, bnd))

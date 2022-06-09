@@ -1,25 +1,24 @@
 import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import portion
-from Diffusion_Process.NetDiffGraph import NetDiffGraph
-from Diffusion_Process.NetDiffNode import NetDiffNode
-from Diffusion_Process.NetDiffEdge import NetDiffEdge
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from Ontological.Atom import Atom
+from Ontological.Constant import Constant
 
-class NetCompTarget:
+class NetCompTarget(Atom):
+	ID = "net_comp_target"
 
-	def __init__(self, component, label = None, interval = None):
+	def __init__(self, component, label, interval):
+		terms = [Constant(str(hash(component))), Constant(label), Constant(interval.lower), Constant(interval.upper)]
+		super().__init__(NetCompTarget.ID, terms)
 		self._component = component
 		self._label = label
-		self._interval = interval
 
 	def getBound(self):
-		return self._interval
+		return portion.closed(self._terms[2].getValue(), self._terms[3].getValue())
 
 	def getLabel(self):
+		#return self._terms[1].getValue()
 		return self._label
 
 	def getComponent(self):
 		return self._component
-
-	def __str__(self):
-		return str(self._component) + '\n' + str(self._label) + '\n' + str(self._interval)

@@ -1,0 +1,9 @@
+blockNumber,timestamp,transactionHash,from,to,creates,value,gasLimit,gasPrice,gasUsed,callingFunction,isError
+1,ts1,txHash1,em1,ceroAddress,cm1,1,gl1,1,gu1,0x,None
+1,ts1,txHash1,a7,ceroAddress,c4,1,gl1,1,gu1,0x,None
+2,ts2,txHash2,a2,a3,None,2,gl2,2,gu2,0x,None
+2,ts3,txHash3,a5,a6,None,3,gl3,3,gu3,0x,None
+3,ts4,txHash4,a2,cm1,None,5,gl4,4,gu4,unaBuenaInvocacion,None
+4,ts5,txHash5,em1,ceroAddress,cm2,5,gl5,5,gu5,0x,None
+11,ts6,txHash6,a3,cm2,None,6,gl5,5,gu5,miraQueSospechoso,None
+12,ts6,txHash6,a8,c4,None,6,gl5,5,gu5,miraQueSospechoso2,None

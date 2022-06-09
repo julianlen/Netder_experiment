@@ -1,7 +1,8 @@
+import hashlib
 class Term:
 
 	def __init__(self, id, value = None):
-		self._id = id
+		self._id = str(id)
 		self._value = value
 
 	def getId(self):
@@ -15,6 +16,11 @@ class Term:
 
 	def setId(self, id):
 		self._id = id
+
+	def __hash__(self):
+		mystring = str(self._id)
+		mystring = mystring.encode('utf-8')
+		return int(hashlib.sha1(mystring).hexdigest(), 16)
 
 	def __eq__(self, term):
 		result = False

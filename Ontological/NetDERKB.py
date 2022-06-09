@@ -1,50 +1,438 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-import copy
-from Ontological.NetDB import NetDB
+import json
+import mariadb
+import portion
 from Ontological.Variable import Variable
 from Ontological.Constant import Constant
 from Ontological.Atom import Atom
-from Ontological.OntDB import OntDB
+from Ontological.Null import Null
+from Ontological.RDBHomomorphism import RDBHomomorphism
+from Diffusion_Process.NetDiffFact import NetDiffFact
+from Diffusion_Process.NLocalLabel import NLocalLabel
+from Diffusion_Process.ELocalLabel import ELocalLabel
+from Diffusion_Process.NetDiffNode import NetDiffNode
+from Diffusion_Process.NetDiffEdge import NetDiffEdge
+from Diffusion_Process.NetDiffGraph import NetDiffGraph
+from ATLAST.dbbackend.schema import Schema
+
+drop_edge = "TRUNCATE TABLE `edge`;"
+drop_hyp_malicious = "TRUNCATE TABLE `hyp_malicious`; "
+drop_hyp_same_person = "TRUNCATE TABLE `hyp_same_person`; "
+drop_invoke = "TRUNCATE TABLE `invoke`; "
+drop_is_owner = "TRUNCATE TABLE `is_owner`; "
+drop_mapping = "TRUNCATE TABLE `mapping`; "
+drop_net_diff_fact = "TRUNCATE TABLE `net_diff_fact`; "
+drop_node = "TRUNCATE TABLE `node`; "
+drop_null_info = "TRUNCATE TABLE `null_info`;"
+drop_threshold_balance_in = "TRUNCATE TABLE `threshold_balance_in`;"
+drop_threshold_balance_out = "TRUNCATE TABLE `threshold_balance_out`;"
+drop_threshold_gasPrice_in = "TRUNCATE TABLE `threshold_gasPrice_in`;"
+drop_threshold_gasPrice_out = "TRUNCATE TABLE `threshold_gasPrice_out`;"
+drop_threshold_degree_in = "TRUNCATE TABLE `threshold_degree_in`;"
+drop_threshold_degree_out = "TRUNCATE TABLE `threshold_degree_out`;"
+drop_contracts_created = "TRUNCATE TABLE `contracts_created`;"
+drop_invocaciones = "TRUNCATE TABLE `invocaciones`;"
+drop_transferencias = "TRUNCATE TABLE `transferencias`;"
+drop_threshold_invocaciones = "TRUNCATE TABLE `threshold_invocaciones`;"
+drop_threshold_transferencias = "TRUNCATE TABLE `threshold_transferencias`;"
+drop_degree_in = "TRUNCATE TABLE `degree_in`;"
+drop_degree_out = "TRUNCATE TABLE `degree_out`;"
+drop_gasPrice_out = "TRUNCATE TABLE `gasPrice_out`;"
+drop_gasPrice_in = "TRUNCATE TABLE `gasPrice_in`;"
+drop_balance_out = "TRUNCATE TABLE `balance_out`;"
+drop_balance_in = "TRUNCATE TABLE `balance_in`;"
+drop_warning_contracts_created = "TRUNCATE TABLE `warning_contracts_created`;"
+drop_warning_gasPrice_in = "TRUNCATE TABLE `warning_gasPrice_in`;"
+drop_warning_gasPrice_out = "TRUNCATE TABLE `warning_gasPrice_out`;"
+drop_warning_balance_out = "TRUNCATE TABLE `warning_balance_out`;"
+drop_warning_balance_in = "TRUNCATE TABLE `warning_balance_in`;"
+drop_warning_degree_out = "TRUNCATE TABLE `warning_degree_out`;"
+drop_warning_degree_in = "TRUNCATE TABLE `warning_degree_in`;"
+
+def drop_tables(con):
+    con.execute(drop_edge)
+    con.execute(drop_hyp_malicious)
+    con.execute(drop_hyp_same_person)
+    con.execute(drop_invoke)
+    con.execute(drop_is_owner)
+    con.execute(drop_mapping)
+    con.execute(drop_net_diff_fact)
+    con.execute(drop_node)
+    con.execute(drop_null_info)
+    con.execute(drop_threshold_balance_in)
+    con.execute(drop_threshold_balance_out)
+    con.execute(drop_threshold_gasPrice_in)
+    con.execute(drop_threshold_gasPrice_out)
+    con.execute(drop_threshold_degree_in)
+    con.execute(drop_threshold_degree_out)
+    con.execute(drop_contracts_created)
+    con.execute(drop_invocaciones)
+    con.execute(drop_transferencias)
+    con.execute(drop_threshold_invocaciones)
+    con.execute(drop_threshold_transferencias)
+    con.execute(drop_degree_in)
+    con.execute(drop_degree_out)
+    con.execute(drop_gasPrice_out)
+    con.execute(drop_gasPrice_in)
+    con.execute(drop_balance_out)
+    con.execute(drop_balance_in)
+    con.execute(drop_warning_contracts_created)
+    con.execute(drop_warning_gasPrice_in)
+    con.execute(drop_warning_gasPrice_out)
+    con.execute(drop_warning_balance_out)
+    con.execute(drop_warning_balance_in)
+    con.execute(drop_warning_degree_out)
+    con.execute(drop_warning_degree_in)
 
 class NetDERKB:
-
-	def __init__(self, ont_data = [], net_db= NetDB(), netder_tgds=[], netder_egds = [], netdiff_lrules=[], netdiff_grules=[]):
-		self._ont_db = OntDB()
-		self.add_ont_knowledge(ont_data)
-		self._net_db = net_db
+	NULL_INFO = "null_info"
+	counter_graph = 0
+	def __init__(self, data = set(), net_diff_graph = None, config_db = "config_db.json",schema_path = "schema_tesis.xml", netder_tgds=[], netder_egds = [], netdiff_lrules=[], netdiff_grules=[]):
+		self._schema_path = schema_path
+		self._config_db = config_db
 		self._netder_tgds = netder_tgds
 		self._netder_egds = netder_egds
-		self._netdiff_lrules = netdiff_lrules
-		self._netdiff_grules = netdiff_grules
+		aux_rules = self._netder_tgds + self._netder_egds
+		counter = 0
+		for rule in aux_rules:
+			rule.set_id(counter)
+			counter = counter + 1
+		# self._netdiff_lrules = netdiff_lrules
+		# self._netdiff_grules = netdiff_grules
+		# self._net_diff_graph = net_diff_graph
+		# nodes = net_diff_graph.getNodes()
+		# edges = net_diff_graph.getEdges()
+		# data = data.union(nodes)
+		# data = data.union(edges)
+		self._load_schema()
+		self.con = self.init_connection()
+		drop_tables(self.con.cursor())
+		self._load_tuples_id(self.con)
+		self.add_ont_data(data)
+		# self.update_info(con)
+		self.con.commit()
+		# self.con.close()
 
-	def add_ont_knowledge(self, atoms):
-		success = False
-		copy_atoms = copy.deepcopy(atoms)
-		index = 0
-		for atom in copy_atoms:
-			result = self._ont_db.add_atom(atom)
-			success = success or result
+
+	def get_config_db(self):
+		return self._config_db
+
+	def init_connection(self):
+		with open(self._config_db) as config_json:
+			config_data = json.load(config_json)
+		try:
+		    con = mariadb.connect(
+		        user=config_data['user'],
+		        password=config_data['password'],
+		        host=config_data['host'],
+		        port=config_data['port'],
+		        database=config_data['database'],
+				unix_socket=config_data['unix_socket']
+		        )
+		except mariadb.Error as e:
+			print(f"Error connecting to MariaDB Platform: {e}")
+			sys.exit(1)
+		return con
+
+	def get_connection(self):
+		return self.con
+
+	def close_connection(self):
+		self.con.close()
+
+	def _load_tuples_id(self, connection):
+		self._tuples_id = set()
+		cur = connection.cursor()
+		for table_name in self._tables.keys():
+			columns = self.get_columns(table_name)
+			query = "SELECT "+ columns[0] + " FROM " + table_name + ";"
+			cur.execute(query)
+			data = cur.fetchall()
+			for row in data:
+				self._tuples_id.add(row[0])
+
+
+	def _load_schema(self):
+		self._schema = Schema(self._schema_path)
+		self._tables = {}
+		self._tables['null_info'] = {'columns': ['1_primary_key', '2_value', '3_table_name', '4_foreign_key']}
+		self._tables['mapping'] = {'columns': ['1_primary_key']}
+		self._tables['net_diff_fact'] = {'columns': ['1_primary_key', '2_component', '3_label', '4_interval_lower', '5_interval_upper', '6_t_lower', '7_t_upper']}
+		data = self._schema.getAllData()
+		for table_name in data["tables"].keys():
+			self._tables[table_name] = {'columns':[]}
+			for pk in data["tables"][table_name]['primary_keys']:
+				col = pk.replace("\n", "")
+				col = col.replace("\t", "")
+				self._tables[table_name]['columns'].append(col)
+
+	def get_schema(self):
+		return self._schema
+
+
+	def add_ont_data(self, atoms):
+		con = self.get_connection()
+		cur = con.cursor()
+		#filtrar los atomos que ya se encuentran en la base de datos
+		filtered_atoms = []
+		for atom in atoms:
+			#si el atomo no se encuentra en la base de datos significa que puede ser agregado
+			if not self.exists(con, atom):
+				filtered_atoms.append(atom)
+				self._tuples_id.add(str(hash(atom)))
+
+		success = None
+		if len(filtered_atoms) > 0:
+			sql_query_ini = 'INSERT INTO '
+			sql_queries_part = {}
+			for atom in filtered_atoms:
+				if not (atom.getId() in sql_queries_part):
+					sql_queries_part[atom.getId()] = ' VALUES '
+				
+				sql_queries_part[atom.getId()] = sql_queries_part[atom.getId()] + '(' + "'" + str(hash(atom)) + "',"
+				for term in atom.get_terms():
+					string_value = str(term.getValue())
+					#saco cualquier caracter de escape que pueda contener
+					string_value = string_value.replace("\\", "")
+					#si contiene algun simbolo ' se le antepone el simbolo \
+					string_value = string_value.replace("'", "\\'")
+					sql_queries_part[atom.getId()] = sql_queries_part[atom.getId()] + "'" + string_value + "',"
+				#saco la coma que queda demas
+				sql_queries_part[atom.getId()] = sql_queries_part[atom.getId()][:-1]
+				sql_queries_part[atom.getId()] = sql_queries_part[atom.getId()] + '),'
+
+			for key in sql_queries_part.keys():
+				#saco la coma que queda demas
+				sql_queries_part[key] = sql_queries_part[key][:-2]
+				sql_queries_part[key] = sql_queries_part[key] + ')'
+				sql_query = sql_query_ini + '`' + key + '`' + sql_queries_part[key]
+				cur.execute(sql_query)
+			success = True
+		else:
+			success = False
+		con.commit()
+		# con.close()
 
 		return success
 
-	def add_net_knowledge(self, knowledge, time):
-		self._net_db.add_knowledge(knowledge, time)
-
-	def add_facts(self, facts):
-		self._net_db.add_facts(facts)
-
 	def get_net_diff_facts(self):
-		return self._net_db.get_net_diff_facts()
+		return self._net_diff_facts
 
-	def get_ont_db(self):
-		return self._ont_db
+	def _update_net_diff_facts(self, connection):
+		result = set()
+		cur = connection.cursor()
+		tables = {"net_diff_fact": {"name":NetDiffFact.ID}, "node": {"name":NetDiffNode.ID}, "edge": {"name":NetDiffEdge.ID}}
+		for key in tables.keys():
+			column_query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '"+ tables[key]["name"] + "' ORDER BY ORDINAL_POSITION"
+			cur.execute(column_query)
+			columns = cur.fetchall()
+			tables[key]["pk_col"] = columns[0][0]
+			#saco la columna de la clave primaria y me quedo solo con las restantes
+			tables[key]["other_col"] = columns[1:]
 
-	def get_net_data(self):
-		return self._net_db.get_net_data()
+		#columna que es clave foranea en net_diff_fact (hace referencia a un nodo o arco)
+		tables["net_diff_fact"]["fk_col"] = tables["net_diff_fact"]["other_col"][0][0]
+		#la clave foranea no va a ser incluida en el select/proyeccion de la consulta SQL
+		tables["net_diff_fact"]["other_col"] = tables["net_diff_fact"]["other_col"][1:]		
+		
+		query_ini = "SELECT "
+		#primero se obtenian los net_diff_facts relativos a nodos
+		query = query_ini
+		for column in tables["node"]["other_col"]:
+			query = query + column[0] + ","
 
-	def get_comp_from_atom(self, atom):
-		return self._net_db.get_comp_from_atom(atom)
+		for column in tables["net_diff_fact"]["other_col"]:
+			query = query + column[0] + ","
+		
+		#saco la coma demas
+		query = query[:-1]
+		query = query + " FROM " + tables["node"]["name"] + " INNER JOIN " + tables["net_diff_fact"]["name"] + " ON " + tables["node"]["name"] + "." + tables["node"]["pk_col"] + "=" + tables["net_diff_fact"]["name"] + "." + tables["net_diff_fact"]["fk_col"]
+		
+		cur.execute(query)
+		data = cur.fetchall()
+		for row in data:
+			node = NetDiffNode(row[0])
+			result.add(NetDiffFact(node, NLocalLabel(row[1]), portion.closed(float(row[2]), float(row[3])), int(row[4]), int(row[5])))
+
+		#primero se obtenian los net_diff_facts relativos a arcos
+
+		query = query_ini
+		for column in tables["edge"]["other_col"]:
+			query = query + column[0] + ","
+
+		for column in tables["net_diff_fact"]["other_col"]:
+			query = query + column[0] + ","
+		
+		#saco la coma demas
+		query = query[:-1]
+		query = query + " FROM " + tables["edge"]["name"] + " INNER JOIN " + tables["net_diff_fact"]["name"] + " ON " + tables["edge"]["name"] + "." + tables["edge"]["pk_col"] + "=" + tables["net_diff_fact"]["name"] + "." + tables["net_diff_fact"]["fk_col"]
+		
+		cur.execute(query)
+		data = cur.fetchall()
+		for row in data:
+			edge = NetDiffEdge(row[0], row[1])
+			result.add(NetDiffFact(edge, ELocalLabel(row[1]), portion.closed(float(row[2]), float(row[3])), int(row[4]), int(row[5])))
+
+		self._net_diff_facts = result
+
+	def get_columns(self, table_name):
+		columns = self._tables[table_name]['columns']
+		return columns
+
+
+	def create_null(self):
+		result = None
+		con = self.get_connection()
+		cur = con.cursor()
+		
+		columns = self.get_columns(NetDERKB.NULL_INFO)
+		#consulta para verificar cuantos valores nulls distintos ya fueron creados
+		query = "SELECT DISTINCT " + columns[1][0] + " FROM " + NetDERKB.NULL_INFO + ";"
+		cur.execute(query)
+		data = cur.fetchall()
+		result = Null("z" + str(len(data)))
+		con.commit()
+		# con.close()
+		return result
+
+	def save_null_info(self, atom, null):
+		if atom.is_present(null):
+			null_info_atom = Atom(str(NetDERKB.NULL_INFO), [Constant(str(null.getValue())), Constant(str(atom.getId())), Constant(str(hash(atom)))])
+			self.add_ont_data({null_info_atom})
+
+	def exists(self, connection, atom):
+		return str(hash(atom)) in self._tuples_id
+
+	def update_nulls(self, mapping):
+		success = False
+		if len(mapping) > 0:
+			
+			con = self.get_connection()
+			cur = con.cursor()
+			
+			nulls_info_columns = self.get_columns(NetDERKB.NULL_INFO)
+			for key in mapping.keys():
+				condicion1 = isinstance(mapping[key], Null)
+				condicion2 = isinstance(mapping[key], Constant)
+				if condicion1 or condicion2:
+					query_info_nulls = "SELECT * FROM " + NetDERKB.NULL_INFO + " WHERE " + nulls_info_columns[1][0] + "= '" + str(key) + "';"
+					cur.execute(query_info_nulls)
+					nulls_info = cur.fetchall()
+					for row in nulls_info:
+						columns = self.get_columns(row[2])
+						pk_col = columns[0][0]
+						#saco la primer columna que es relativa a la clave primaria
+						other_columns = columns[1:]
+						fk = row[3]
+						table_name = row[2]
+						query = "SELECT * FROM " + table_name + " WHERE " + pk_col + "=" + fk + ";"
+						cur.execute(query)
+						data = cur.fetchall()
+						terms = []
+						#elimino el primer dato porque es relativo a la clave de la tabla (hash)
+						data[0] = data[0][1:]
+						for item in data[0]:
+							if item[:1] == "z" and item[1:].isdigit():
+								terms.append(Null(str(item)))
+							else:
+								terms.append(Constant(str(item)))
+							
+						atom = Atom(table_name, terms)
+						#hash before mapping
+						hash_bm = hash(atom)
+						atom.map(mapping)
+						if condicion1:
+							if not self.exists(con, atom):
+								query_update_ini1 = "UPDATE " + table_name + " SET "
+								query_update_partial = ""
+								for index in range(len(other_columns)):
+									query_update_partial = query_update_partial + other_columns[index][0] + "='" + atom.get_terms()[index].getValue() + "', "
+
+								#quito la coma y el espacio demas
+								query_update_partial = query_update_partial[:-2]
+								query_update1 = query_update_ini1 + query_update_partial + " WHERE " + pk_col + "='" + fk + "';"
+								
+								cur.execute(query_update1)
+
+								query_update2 = "UPDATE " + NetDERKB.NULL_INFO + " SET " + nulls_info_columns[1][0] + "='" + str(mapping[key].getValue()) + "' WHERE " + nulls_info_columns[0][0] + "='" + str(row[0]) + "';"
+								cur.execute(query_update2)
+							else:
+								query_delete1 = "DELETE FROM " + table_name + " WHERE " + pk_col + "='" + str(hash_bm) + "';"
+								cur.execute(query_delete1)
+								query_delete2 = "DELETE FROM " + NetDERKB.NULL_INFO + " WHERE " + nulls_info_columns[3][0] + "='" + str(hash_bm) + "';"
+								cur.execute(query_delete2)
+
+						elif condicion2:
+							self.add_ont_data({atom})
+
+			con.commit()
+			# con.close()
+			success = True
+
+		return success
+		
+	def _update_graph(self,connection):
+
+		node = Atom(NetDiffNode.ID, [Variable("ID")])
+		edge = Atom(NetDiffEdge.ID, [Variable("From"), Variable("To")])
+		h = RDBHomomorphism(self)
+		cur = connection.cursor()
+		nodes = []
+		node_sql = h.to_SQL(node)
+		cur.execute(node_sql)
+		node_data = cur.fetchall()
+		for data in node_data:
+			nodes.append(NetDiffNode(data[1]))
+		edges = []
+		edge_sql = h.to_SQL(edge)
+		cur.execute(edge_sql)
+		edge_data = cur.fetchall()
+
+		for data in edge_data:
+			edges.append(NetDiffEdge(data[1], data[2]))
+
+		net_diff_graph = NetDiffGraph("graph", nodes, edges)
+
+		NetDERKB.counter_graph += 1
+		self._net_diff_graph = net_diff_graph
+
+	def clean_tables(self, con):
+		con.execute(drop_edge)
+		con.execute(drop_net_diff_fact)
+		con.execute(drop_node)
+		con.execute(drop_threshold_balance_in)
+		con.execute(drop_threshold_balance_out)
+		con.execute(drop_threshold_gasPrice_in)
+		con.execute(drop_threshold_gasPrice_out)
+		con.execute(drop_threshold_degree_in)
+		con.execute(drop_threshold_degree_out)
+		con.execute(drop_contracts_created)
+		con.execute(drop_invocaciones)
+		con.execute(drop_transferencias)
+		con.execute(drop_threshold_invocaciones)
+		con.execute(drop_threshold_transferencias)
+		con.execute(drop_degree_in)
+		con.execute(drop_degree_out)
+		con.execute(drop_gasPrice_out)
+		con.execute(drop_gasPrice_in)
+		con.execute(drop_balance_out)
+		con.execute(drop_balance_in)
+		con.execute(drop_warning_contracts_created)
+		con.execute(drop_warning_gasPrice_in)
+		con.execute(drop_warning_gasPrice_out)
+		con.execute(drop_warning_balance_out)
+		con.execute(drop_warning_balance_in)
+		con.execute(drop_warning_degree_out)
+		con.execute(drop_warning_degree_in)
+
+	def update_info(self, connection):
+		pass
+		# self._update_graph(connection)
+		# self._update_net_diff_facts(connection)
+
+	def get_net_diff_graph(self):
+		return self._net_diff_graph
 
 	def get_netder_egds(self):
 		return self._netder_egds
@@ -58,18 +446,3 @@ class NetDERKB:
 	def get_net_diff_grules(self):
 		return self._netdiff_grules
 
-	def get_net_diff_graph(self):
-		return self._net_db.get_net_diff_graph()
-
-	def apply_map(self, mapping):
-		self._ont_db.apply_mapping(mapping)
-
-	def get_data_from_pred(self, pred):
-		return self._ont_db.get_atoms_from_pred(pred) + self._net_db.get_comp_from_pred(pred)
-
-
-	def remove_atoms_from_pred(self, pred):
-		self._ont_db.remove_atoms_from_pred(pred)
-
-	def get_net_db(self):
-		return self._net_db
